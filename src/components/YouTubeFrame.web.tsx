@@ -25,7 +25,7 @@ type YouTubeApi = {
       playerVars: Record<string, number>;
       events: {
         onReady: () => void;
-        onError: () => void;
+        onError: (event: { data: number }) => void;
         onStateChange: (event: { data: number }) => void;
       };
     },
@@ -98,7 +98,7 @@ export function YouTubeFrame({ ref, videoId, width, height, onReady, onError, on
                 if (duration > 0) onTime(player?.getCurrentTime() ?? 0, duration);
               }, YOUTUBE_POLL_MS);
             },
-            onError,
+            onError: ({ data }) => onError(data),
             onStateChange: ({ data }) => {
               const state = STATES[data];
               if (state) onStateChange(state);

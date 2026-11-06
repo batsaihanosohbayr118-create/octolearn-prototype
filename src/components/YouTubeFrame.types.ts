@@ -16,7 +16,8 @@ export type YouTubeFrameProps = {
   height: number;
   /** The callbacks below should be stable functions. */
   onReady: () => void;
-  onError: () => void;
+  /** Receives YouTube's error code when it gave one. */
+  onError: (code?: string | number) => void;
   onStateChange: (state: YouTubeState) => void;
   onTime: (currentTime: number, duration: number) => void;
 };

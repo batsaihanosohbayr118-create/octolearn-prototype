@@ -12,6 +12,9 @@ import { YouTubeFrame } from './YouTubeFrame';
 import type { YouTubeFrameHandle, YouTubeState } from './YouTubeFrame.types';
 
 const CONTROLS_HIDE_MS = 3000;
+/** Some WebViews refuse to start a video from code, without a tap on the video itself. */
+const START_TIMEOUT_MS = 8000;
+const MIN_ADVANCE_SEC = 0.1;
 
 type YouTubeLessonPlayerProps = {
   videoId: string;
@@ -44,11 +47,14 @@ export function YouTubeLessonPlayer({
   onRetry,
 }: YouTubeLessonPlayerProps) {
   const frameRef = useRef<YouTubeFrameHandle>(null);
+  const startedFrom = useRef(0);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [isReady, setIsReady] = useState(false);
-  const [hasFailed, setHasFailed] = useState(false);
+  const [failure, setFailure] = useState<{ code?: string | number } | null>(null);
+  const hasFailed = failure !== null;
   const [state, setState] = useState<YouTubeState>('idle');
   const [isStarting, setIsStarting] = useState(false);
+  const [startWasRefused, setStartWasRefused] = useState(false);
   const [time, setTime] = useState({ current: 0, duration: 0 });
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
@@ -56,21 +62,26 @@ export function YouTubeLessonPlayer({
 
   const isPlaying = state === 'playing';
   // The poster covers YouTube's own start and end screens, never the playing video.
-  const showPoster = state === 'idle' || state === 'ended';
+  const showPoster = state === 'idle' || state === 'ended' || (isStarting && time.current === 0);
 
   const handleReady = useCallback(() => setIsReady(true), []);
-  const handleError = useCallback(() => setHasFailed(true), []);
+  const handleError = useCallback((code?: string | number) => setFailure({ code }), []);
   const handleTime = useCallback(
     (current: number, duration: number) => {
       setTime({ current, duration });
       onProgress(current / duration);
+      // Only a moving clock proves a start worked: a refused start can still report 'playing'.
+      if (current > startedFrom.current + MIN_ADVANCE_SEC) {
+        setIsStarting(false);
+        setStartWasRefused(false);
+      }
     },
     [onProgress],
   );
   const handleState = useCallback(
     (next: YouTubeState) => {
       setState(next);
-      setIsStarting(false);
+      if (next === 'ended') setIsStarting(false);
       if (next === 'paused') setControlsVisible(true);
       if (next === 'ended') {
         onProgress(1);
@@ -89,6 +100,17 @@ export function YouTubeLessonPlayer({
     if (paused) frameRef.current?.pause();
   }, [paused]);
 
+  // If the video won't start from our button, get out of the way so YouTube's own button can be tapped.
+  useEffect(() => {
+    if (!isStarting) return;
+    const timer = setTimeout(() => {
+      setIsStarting(false);
+      setStartWasRefused(true);
+      frameRef.current?.pause();
+    }, START_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [isStarting]);
+
   // Paused or being dragged, the controls stay; while playing they get out of the way.
   useEffect(() => {
     if (!controlsVisible || !isPlaying || isDragging) return;
@@ -97,13 +119,14 @@ export function YouTubeLessonPlayer({
   }, [controlsVisible, isPlaying, isDragging]);
 
   const start = () => {
+    startedFrom.current = state === 'ended' ? 0 : time.current;
     setIsStarting(true);
     setControlsVisible(false);
     if (state === 'ended') frameRef.current?.seekTo(0);
     frameRef.current?.play();
   };
 
-  if (hasFailed || timedOut) return <VideoError onRetry={onRetry} />;
+  if (hasFailed || timedOut) return <VideoError code={failure?.code} onRetry={onRetry} />;
 
   return (
     <View
@@ -124,7 +147,7 @@ export function YouTubeLessonPlayer({
         />
       ) : null}
 
-      {showPoster ? (
+      {startWasRefused ? null : showPoster ? (
         <Pressable
           testID="video-start"
           accessibilityRole="button"
@@ -163,7 +186,7 @@ export function YouTubeLessonPlayer({
                 currentTime={time.current}
                 duration={time.duration}
                 fullscreen={fullscreen}
-                onTogglePlay={() => (isPlaying ? frameRef.current?.pause() : frameRef.current?.play())}
+                onTogglePlay={() => (isPlaying ? frameRef.current?.pause() : start())}
                 onSeek={handleSeek}
                 onDraggingChange={setIsDragging}
                 onToggleFullscreen={() => onFullscreenChange(!fullscreen)}

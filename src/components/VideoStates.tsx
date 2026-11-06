@@ -13,12 +13,13 @@ export const videoFrameStyle = {
   overflow: 'hidden',
 } as const;
 
-export function VideoError({ onRetry }: { onRetry: () => void }) {
+export function VideoError({ code, onRetry }: { code?: string | number; onRetry: () => void }) {
   return (
     <View testID="video-error" style={[videoFrameStyle, styles.centered]}>
       <Ionicons name="cloud-offline-outline" size={36} color={colors.onColor} />
       <AppText variant="caption" color={colors.onColor} style={styles.errorText}>
         Видео ачаалагдсангүй. Интернэт холболтоо шалгаад дахин оролдоно уу.
+        {code === undefined ? '' : ` (код: ${code})`}
       </AppText>
       <View style={styles.retry}>
         <GameButton testID="video-retry" label="Дахин оролдох" icon="refresh" onPress={onRetry} />
