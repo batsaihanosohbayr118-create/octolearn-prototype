@@ -4,7 +4,8 @@ import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GameIcon } from '@/components/GameIcon';
-import { ConfirmDialog, useToast } from '@/components/overlays';
+import { ConfirmDialog } from '@/components/feedback/ConfirmDialog';
+import { useToast } from '@/components/feedback/useToast';
 import { AppText, Column, IconBadge, ProgressBar } from '@/components/ui';
 import { WeeklyChart } from '@/components/WeeklyChart';
 import { courseData } from '@/domain/course';
@@ -12,12 +13,14 @@ import { getCourseStats, getLevel, getStreak, getTotalXp, getWeeklyXp } from '@/
 import { useProgress, useProgressStore } from '@/store/progressStore';
 import { cardShadow, colors, MIN_TOUCH_TARGET, radius, spacing } from '@/theme';
 
-function StatTile({ badge, value, label, testID }: {
+interface StatTileProps {
   badge: ReactNode;
   value: string;
   label: string;
   testID: string;
-}) {
+}
+
+function StatTile({ badge, value, label, testID }: StatTileProps) {
   return (
     <View style={styles.tile}>
       {badge}
@@ -116,7 +119,9 @@ export default function ProfileScreen() {
             />
             <StatTile
               testID="stat-lessons"
-              badge={<IconBadge icon="play" color={colors.primaryDark} background={colors.primaryTint} size={36} />}
+              badge={
+                <IconBadge icon="play" color={colors.primaryDark} background={colors.primaryTint} size={36} />
+              }
               value={`${stats.lessonsDone} / ${stats.lessonsTotal}`}
               label="Дууссан хичээл"
             />
@@ -178,13 +183,38 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, gap: spacing.lg },
-  hero: { backgroundColor: colors.primary, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.sm, ...cardShadow },
-  heroTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.sm },
-  heroName: { flex: 1 },
-  heroXp: { alignItems: 'flex-end' },
-  heroXpValue: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    padding: spacing.lg,
+    gap: spacing.lg,
+  },
+  hero: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    gap: spacing.sm,
+    ...cardShadow,
+  },
+  heroTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  heroName: {
+    flex: 1,
+  },
+  heroXp: {
+    alignItems: 'flex-end',
+  },
+  heroXpValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
   avatar: {
     width: 60,
     height: 60,
@@ -193,9 +223,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  levelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  card: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.sm, ...cardShadow },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  levelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    gap: spacing.sm,
+    ...cardShadow,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
   tile: {
     flexGrow: 1,
     flexBasis: '45%',
@@ -212,7 +256,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tileValue: { marginTop: spacing.sm },
+  tileValue: {
+    marginTop: spacing.sm,
+  },
   resetButton: {
     minHeight: MIN_TOUCH_TARGET,
     flexDirection: 'row',

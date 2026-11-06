@@ -154,9 +154,17 @@ describe('xp', () => {
 describe('course stats', () => {
   it('counts lessons and quizzes toward the percent, excluding coming-soon units', () => {
     let state = finishUnit1Lessons();
-    expect(getCourseStats(courseData, state)).toMatchObject({ lessonsDone: 5, lessonsTotal: 10, percent: 42 });
+    expect(getCourseStats(courseData, state)).toMatchObject({
+      lessonsDone: 5,
+      lessonsTotal: 10,
+      percent: 42,
+    });
     state = recordQuizAttempt(state, unit1.quiz, 4, NOW).state;
-    expect(getCourseStats(courseData, state)).toMatchObject({ quizzesPassed: 1, quizzesTotal: 2, percent: 50 });
+    expect(getCourseStats(courseData, state)).toMatchObject({
+      quizzesPassed: 1,
+      quizzesTotal: 2,
+      percent: 50,
+    });
   });
 
   it('averages the best score per attempted quiz, or null with no attempts', () => {

@@ -32,12 +32,14 @@ type YouTubeLessonPlayerProps = {
  * Covers the frame except for a hole over YouTube's play button, so that YouTube's links stay out of reach.
  * Taps on the covered part start the video from code, which some WebViews refuse.
  */
-function PosterTapGuard({ width, height, label, onPress }: {
+interface PosterTapGuardProps {
   width: number;
   height: number;
   label: string;
   onPress: () => void;
-}) {
+}
+
+function PosterTapGuard({ width, height, label, onPress }: PosterTapGuardProps) {
   const sideWidth = (width - PLAY_HOLE_SIZE) / 2;
   const stripHeight = (height - PLAY_HOLE_SIZE) / 2;
   const strips = [
@@ -65,7 +67,11 @@ function FadeIn({ children }: { children: ReactNode }) {
     Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver }).start();
   }, [opacity]);
   return (
-    <Animated.View testID="video-controls" pointerEvents="box-none" style={[StyleSheet.absoluteFill, { opacity }]}>
+    <Animated.View
+      testID="video-controls"
+      pointerEvents="box-none"
+      style={[StyleSheet.absoluteFill, { opacity }]}
+    >
       {children}
     </Animated.View>
   );
@@ -165,9 +171,11 @@ export function YouTubeLessonPlayer({
     <View
       testID="youtube-frame"
       style={fullscreen ? styles.fullscreenFrame : videoFrameStyle}
-      onLayout={({ nativeEvent }) => setSize({ width: nativeEvent.layout.width, height: nativeEvent.layout.height })}
+      onLayout={({ nativeEvent }) =>
+        setSize({ width: nativeEvent.layout.width, height: nativeEvent.layout.height })
+      }
     >
-      {size.width > 0 ? (
+      {size.width > 0 && (
         <YouTubeFrame
           ref={frameRef}
           videoId={videoId}
@@ -178,7 +186,7 @@ export function YouTubeLessonPlayer({
           onStateChange={handleState}
           onTime={handleTime}
         />
-      ) : null}
+      )}
 
       {startWasRefused ? null : showPoster ? (
         <>
@@ -197,12 +205,7 @@ export function YouTubeLessonPlayer({
             )}
           </View>
           {state === 'idle' && isReady && !isStarting ? (
-            <PosterTapGuard
-              width={size.width}
-              height={size.height}
-              label="Видео тоглуулах"
-              onPress={start}
-            />
+            <PosterTapGuard width={size.width} height={size.height} label="Видео тоглуулах" onPress={start} />
           ) : (
             // Also covers YouTube's end screen, whose links lead away from the lesson.
             <Pressable
@@ -225,7 +228,7 @@ export function YouTubeLessonPlayer({
             style={StyleSheet.absoluteFill}
           />
           {/* Unmounted when hidden, so invisible buttons can't catch taps. */}
-          {controlsVisible ? (
+          {controlsVisible && (
             <FadeIn>
               <VideoControls
                 isPlaying={isPlaying}
@@ -239,7 +242,7 @@ export function YouTubeLessonPlayer({
                 onToggleFullscreen={() => onFullscreenChange(!fullscreen)}
               />
             </FadeIn>
-          ) : null}
+          )}
         </>
       )}
     </View>
@@ -247,9 +250,20 @@ export function YouTubeLessonPlayer({
 }
 
 const styles = StyleSheet.create({
-  fullscreenFrame: { flex: 1, width: '100%', backgroundColor: '#000000', overflow: 'hidden' },
-  guard: { position: 'absolute' },
-  poster: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' },
+  fullscreenFrame: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#000000',
+    overflow: 'hidden',
+  },
+  guard: {
+    position: 'absolute',
+  },
+  poster: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000',
+  },
   startButton: {
     width: 72,
     height: 72,

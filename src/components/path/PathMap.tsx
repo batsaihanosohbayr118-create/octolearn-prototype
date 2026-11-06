@@ -9,8 +9,8 @@ import type { ItemStatus, PathItem, Unit } from '@/domain/types';
 import { useAnimatedValue } from '@/lib/useAnimatedValue';
 import { cardShadow, colors, fonts, radius, spacing, useNativeDriver } from '@/theme';
 
-import { GameIcon } from './GameIcon';
-import { AppText, IconBadge, ProgressBar, type IconName } from './ui';
+import { GameIcon } from '@/components/GameIcon';
+import { AppText, IconBadge, ProgressBar, type IconName } from '@/components/ui';
 
 const LESSON_SIZE = 72;
 const QUIZ_SIZE = 64; // Rotated 45°, so its diagonal is about 90.
@@ -44,7 +44,12 @@ function PulseRing({ shape }: { shape: 'circle' | 'diamond' }) {
   const pulse = useAnimatedValue(0);
   useEffect(() => {
     const loop = Animated.loop(
-      Animated.timing(pulse, { toValue: 1, duration: 1500, easing: Easing.out(Easing.quad), useNativeDriver }),
+      Animated.timing(pulse, {
+        toValue: 1,
+        duration: 1500,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver,
+      }),
     );
     loop.start();
     return () => loop.stop();
@@ -68,7 +73,13 @@ function PulseRing({ shape }: { shape: 'circle' | 'diamond' }) {
   );
 }
 
-function PathNode({ item, status, onPress }: { item: PathItem; status: ItemStatus; onPress: () => void }) {
+interface PathNodeProps {
+  item: PathItem;
+  status: ItemStatus;
+  onPress: () => void;
+}
+
+function PathNode({ item, status, onPress }: PathNodeProps) {
   const isQuiz = item.kind === 'quiz';
   const palette = isQuiz ? quizPalette[status] : lessonPalette[status];
   const shape = isQuiz ? styles.quizShape : styles.lessonShape;
@@ -96,16 +107,24 @@ function PathNode({ item, status, onPress }: { item: PathItem; status: ItemStatu
       >
         {({ pressed }) => (
           <>
-            {status === 'active' ? <PulseRing shape={isQuiz ? 'diamond' : 'circle'} /> : null}
-            <View style={[shape, { backgroundColor: palette.lip, transform: [{ translateY: LIP }, ...rotation] }]} />
+            {status === 'active' && <PulseRing shape={isQuiz ? 'diamond' : 'circle'} />}
+            <View
+              style={[shape, { backgroundColor: palette.lip, transform: [{ translateY: LIP }, ...rotation] }]}
+            />
             <View
               style={[
                 shape,
                 styles.nodeFace,
-                { backgroundColor: palette.face, transform: [{ translateY: pressed ? LIP - 2 : 0 }, ...rotation] },
+                {
+                  backgroundColor: palette.face,
+                  transform: [{ translateY: pressed ? LIP - 2 : 0 }, ...rotation],
+                },
               ]}
             />
-            <View pointerEvents="none" style={[styles.nodeIcon, { transform: [{ translateY: pressed ? LIP - 2 : 0 }] }]}>
+            <View
+              pointerEvents="none"
+              style={[styles.nodeIcon, { transform: [{ translateY: pressed ? LIP - 2 : 0 }] }]}
+            >
               {isQuiz && status === 'completed' ? (
                 <GameIcon name="trophy" size={52} />
               ) : (
@@ -128,8 +147,18 @@ function ActiveBubble({ title }: { title: string }) {
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(bob, { toValue: 1, duration: 650, easing: Easing.inOut(Easing.quad), useNativeDriver }),
-        Animated.timing(bob, { toValue: 0, duration: 650, easing: Easing.inOut(Easing.quad), useNativeDriver }),
+        Animated.timing(bob, {
+          toValue: 1,
+          duration: 650,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver,
+        }),
+        Animated.timing(bob, {
+          toValue: 0,
+          duration: 650,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver,
+        }),
       ]),
     );
     loop.start();
@@ -151,7 +180,13 @@ function ActiveBubble({ title }: { title: string }) {
   );
 }
 
-function UnitHeader({ unit, statuses, top }: { unit: Unit; statuses: Record<string, ItemStatus>; top: number }) {
+interface UnitHeaderProps {
+  unit: Unit;
+  statuses: Record<string, ItemStatus>;
+  top: number;
+}
+
+function UnitHeader({ unit, statuses, top }: UnitHeaderProps) {
   const ids = [...unit.lessons.map((lesson) => lesson.id), unit.quiz.id];
   const done = ids.filter((id) => statuses[id] === 'completed').length;
   const isOpen = ids.some((id) => statuses[id] !== 'locked');
@@ -169,7 +204,11 @@ function UnitHeader({ unit, statuses, top }: { unit: Unit; statuses: Record<stri
   return (
     <View
       testID={`unit-${unit.id}`}
-      style={[styles.unitHeader, { top, backgroundColor: background }, isOpen ? null : styles.unitHeaderLocked]}
+      style={[
+        styles.unitHeader,
+        { top, backgroundColor: background },
+        isOpen ? null : styles.unitHeaderLocked,
+      ]}
     >
       <View style={styles.unitText}>
         <AppText numberOfLines={1} variant="heading" color={foreground}>
@@ -178,14 +217,14 @@ function UnitHeader({ unit, statuses, top }: { unit: Unit; statuses: Record<stri
         <AppText numberOfLines={1} variant="caption" color={subtleForeground}>
           {subtitle}
         </AppText>
-        {isOpen && !isDone ? (
+        {isOpen && !isDone && (
           <ProgressBar
             value={done / ids.length}
             height={6}
             color={colors.onColor}
             trackColor="rgba(255, 255, 255, 0.3)"
           />
-        ) : null}
+        )}
       </View>
       <IconBadge
         icon={!isOpen ? 'lock-closed' : isDone ? 'checkmark' : 'book'}
@@ -197,7 +236,13 @@ function UnitHeader({ unit, statuses, top }: { unit: Unit; statuses: Record<stri
   );
 }
 
-function NodeCaption({ node, status, width }: { node: LayoutNode; status: ItemStatus; width: number }) {
+interface NodeCaptionProps {
+  node: LayoutNode;
+  status: ItemStatus;
+  width: number;
+}
+
+function NodeCaption({ node, status, width }: NodeCaptionProps) {
   // Clamped so a stop at the edge of the zigzag can't push its caption off a narrow screen.
   const left = Math.min(Math.max(node.x - CAPTION_WIDTH / 2, spacing.sm), width - CAPTION_WIDTH - spacing.sm);
   const top = node.y + LESSON_SIZE / 2 + (node.item.kind === 'quiz' ? 14 : 10);
@@ -266,14 +311,44 @@ export function PathMap({ layout, width, statuses, onPressItem }: PathMapProps) 
 }
 
 const styles = StyleSheet.create({
-  nodePosition: { position: 'absolute', width: 96, height: 96 },
-  nodeHit: { width: 96, height: 96, alignItems: 'center', justifyContent: 'center' },
-  lessonShape: { position: 'absolute', width: LESSON_SIZE, height: LESSON_SIZE, borderRadius: LESSON_SIZE / 2 },
-  quizShape: { position: 'absolute', width: QUIZ_SIZE, height: QUIZ_SIZE, borderRadius: radius.md },
-  nodeFace: { alignItems: 'center', justifyContent: 'center' },
-  nodeIcon: { position: 'absolute' },
-  ring: { backgroundColor: colors.primary },
-  caption: { position: 'absolute', width: CAPTION_WIDTH, alignItems: 'center' },
+  nodePosition: {
+    position: 'absolute',
+    width: 96,
+    height: 96,
+  },
+  nodeHit: {
+    width: 96,
+    height: 96,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lessonShape: {
+    position: 'absolute',
+    width: LESSON_SIZE,
+    height: LESSON_SIZE,
+    borderRadius: LESSON_SIZE / 2,
+  },
+  quizShape: {
+    position: 'absolute',
+    width: QUIZ_SIZE,
+    height: QUIZ_SIZE,
+    borderRadius: radius.md,
+  },
+  nodeFace: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nodeIcon: {
+    position: 'absolute',
+  },
+  ring: {
+    backgroundColor: colors.primary,
+  },
+  caption: {
+    position: 'absolute',
+    width: CAPTION_WIDTH,
+    alignItems: 'center',
+  },
   // The page colour behind the text keeps it readable where the path passes underneath.
   captionText: {
     textAlign: 'center',
@@ -299,7 +374,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryDark,
     transform: [{ rotate: '45deg' }],
   },
-  bubbleText: { fontFamily: fonts.heavy, textAlign: 'center' },
+  bubbleText: {
+    fontFamily: fonts.heavy,
+    textAlign: 'center',
+  },
   unitHeader: {
     position: 'absolute',
     left: spacing.lg,
@@ -312,6 +390,12 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     ...cardShadow,
   },
-  unitHeaderLocked: { borderWidth: 1, borderColor: colors.border },
-  unitText: { flex: 1, gap: 4 },
+  unitHeaderLocked: {
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  unitText: {
+    flex: 1,
+    gap: 4,
+  },
 });

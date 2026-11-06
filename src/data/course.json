@@ -5,21 +5,76 @@
       "id": "u1",
       "title": "Бүлэг 1: Танилцах",
       "lessons": [
-        { "id": "u1-l1", "title": "Мэндчилгээ", "description": "Hello, Hi, Good morning — өдөр тутмын мэндчилгээг сурна.", "videoUrl": "https://www.youtube.com/watch?v=CilH8QDYJyQ", "durationSec": 184 },
-        { "id": "u1-l2", "title": "Өөрийгөө танилцуулах", "description": "My name is... гэж нэрээ хэлж, бусдаас нэрийг нь асууна.", "videoUrl": "https://www.youtube.com/watch?v=R0c99La3IUg", "durationSec": 73 },
-        { "id": "u1-l3", "title": "Цагаан толгой", "description": "A-аас Z хүртэлх үсгийн дуудлагыг давтана.", "videoUrl": "https://www.youtube.com/watch?v=KKHf5htjTcY", "durationSec": 162 },
-        { "id": "u1-l4", "title": "Тоо 1–10", "description": "One, two, three... нэгээс арав хүртэл тоолж сурна.", "videoUrl": "https://www.youtube.com/watch?v=5mt_mYF7ov8", "durationSec": 111 },
-        { "id": "u1-l5", "title": "Өнгөнүүд", "description": "Red, blue, green — үндсэн өнгөний нэрсийг сурна.", "videoUrl": "https://www.youtube.com/watch?v=RjKN25fvp1c", "durationSec": 116 }
+        {
+          "id": "u1-l1",
+          "title": "Мэндчилгээ",
+          "description": "Hello, Hi, Good morning — өдөр тутмын мэндчилгээг сурна.",
+          "videoUrl": "https://www.youtube.com/watch?v=CilH8QDYJyQ",
+          "durationSec": 184
+        },
+        {
+          "id": "u1-l2",
+          "title": "Өөрийгөө танилцуулах",
+          "description": "My name is... гэж нэрээ хэлж, бусдаас нэрийг нь асууна.",
+          "videoUrl": "https://www.youtube.com/watch?v=R0c99La3IUg",
+          "durationSec": 73
+        },
+        {
+          "id": "u1-l3",
+          "title": "Цагаан толгой",
+          "description": "A-аас Z хүртэлх үсгийн дуудлагыг давтана.",
+          "videoUrl": "https://www.youtube.com/watch?v=KKHf5htjTcY",
+          "durationSec": 162
+        },
+        {
+          "id": "u1-l4",
+          "title": "Тоо 1–10",
+          "description": "One, two, three... нэгээс арав хүртэл тоолж сурна.",
+          "videoUrl": "https://www.youtube.com/watch?v=5mt_mYF7ov8",
+          "durationSec": 111
+        },
+        {
+          "id": "u1-l5",
+          "title": "Өнгөнүүд",
+          "description": "Red, blue, green — үндсэн өнгөний нэрсийг сурна.",
+          "videoUrl": "https://www.youtube.com/watch?v=RjKN25fvp1c",
+          "durationSec": 116
+        }
       ],
       "quiz": {
         "id": "u1-quiz",
         "passPercent": 60,
         "questions": [
-          { "id": "u1-q1", "text": "\"Hello\" гэдэг ямар утгатай вэ?", "options": ["Баяртай", "Сайн байна уу", "Баярлалаа"], "answerIndex": 1 },
-          { "id": "u1-q2", "text": "\"Миний нэр Болд\" гэдгийг англиар хэрхэн хэлэх вэ?", "options": ["My name is Bold", "I am from Bold", "This is my Bold"], "answerIndex": 0 },
-          { "id": "u1-q3", "text": "Англи цагаан толгойн эхний үсэг аль нь вэ?", "options": ["B", "Z", "A"], "answerIndex": 2 },
-          { "id": "u1-q4", "text": "\"Three\" гэдэг ямар тоо вэ?", "options": ["3", "2", "5"], "answerIndex": 0 },
-          { "id": "u1-q5", "text": "\"Цэнхэр\" өнгийг англиар юу гэх вэ?", "options": ["Red", "Blue", "Green"], "answerIndex": 1 }
+          {
+            "id": "u1-q1",
+            "text": "\"Hello\" гэдэг ямар утгатай вэ?",
+            "options": ["Баяртай", "Сайн байна уу", "Баярлалаа"],
+            "answerIndex": 1
+          },
+          {
+            "id": "u1-q2",
+            "text": "\"Миний нэр Болд\" гэдгийг англиар хэрхэн хэлэх вэ?",
+            "options": ["My name is Bold", "I am from Bold", "This is my Bold"],
+            "answerIndex": 0
+          },
+          {
+            "id": "u1-q3",
+            "text": "Англи цагаан толгойн эхний үсэг аль нь вэ?",
+            "options": ["B", "Z", "A"],
+            "answerIndex": 2
+          },
+          {
+            "id": "u1-q4",
+            "text": "\"Three\" гэдэг ямар тоо вэ?",
+            "options": ["3", "2", "5"],
+            "answerIndex": 0
+          },
+          {
+            "id": "u1-q5",
+            "text": "\"Цэнхэр\" өнгийг англиар юу гэх вэ?",
+            "options": ["Red", "Blue", "Green"],
+            "answerIndex": 1
+          }
         ]
       }
     },
@@ -27,20 +82,70 @@
       "id": "u2",
       "title": "Бүлэг 2: Өдөр тутам",
       "lessons": [
-        { "id": "u2-l1", "title": "Гэр бүл", "description": "Mother, father, sister — гэр бүлийн гишүүдийн нэр.", "videoUrl": "https://www.youtube.com/watch?v=v16UI040UTo", "durationSec": 135 },
-        { "id": "u2-l2", "title": "Хоол, ундаа", "description": "Bread, water, tea — хоол ундааны үгсийг сурна.", "videoUrl": "https://www.youtube.com/watch?v=unv3EbqRS6w", "durationSec": 203 },
-        { "id": "u2-l3", "title": "Цаг хэлэх", "description": "What time is it? — цаг асууж, хариулж сурна.", "videoUrl": "https://www.youtube.com/watch?v=OL_H0dOE-Yg", "durationSec": 261 },
-        { "id": "u2-l4", "title": "Өдрийн хуваарь", "description": "I wake up at seven — өдрийн хуваариа ярьж сурна.", "videoUrl": "https://www.youtube.com/watch?v=2yNMy5et9kI", "durationSec": 84 },
-        { "id": "u2-l5", "title": "Дэлгүүрт", "description": "How much is it? — дэлгүүрт үнэ асууж сурна.", "videoUrl": "https://www.youtube.com/watch?v=P5Vi4j1F4sE", "durationSec": 152 }
+        {
+          "id": "u2-l1",
+          "title": "Гэр бүл",
+          "description": "Mother, father, sister — гэр бүлийн гишүүдийн нэр.",
+          "videoUrl": "https://www.youtube.com/watch?v=v16UI040UTo",
+          "durationSec": 135
+        },
+        {
+          "id": "u2-l2",
+          "title": "Хоол, ундаа",
+          "description": "Bread, water, tea — хоол ундааны үгсийг сурна.",
+          "videoUrl": "https://www.youtube.com/watch?v=unv3EbqRS6w",
+          "durationSec": 203
+        },
+        {
+          "id": "u2-l3",
+          "title": "Цаг хэлэх",
+          "description": "What time is it? — цаг асууж, хариулж сурна.",
+          "videoUrl": "https://www.youtube.com/watch?v=OL_H0dOE-Yg",
+          "durationSec": 261
+        },
+        {
+          "id": "u2-l4",
+          "title": "Өдрийн хуваарь",
+          "description": "I wake up at seven — өдрийн хуваариа ярьж сурна.",
+          "videoUrl": "https://www.youtube.com/watch?v=2yNMy5et9kI",
+          "durationSec": 84
+        },
+        {
+          "id": "u2-l5",
+          "title": "Дэлгүүрт",
+          "description": "How much is it? — дэлгүүрт үнэ асууж сурна.",
+          "videoUrl": "https://www.youtube.com/watch?v=P5Vi4j1F4sE",
+          "durationSec": 152
+        }
       ],
       "quiz": {
         "id": "u2-quiz",
         "passPercent": 60,
         "questions": [
-          { "id": "u2-q1", "text": "\"Mother\" гэдэг хэн бэ?", "options": ["Аав", "Ах", "Ээж"], "answerIndex": 2 },
-          { "id": "u2-q2", "text": "\"Ус\" гэдгийг англиар юу гэх вэ?", "options": ["Water", "Bread", "Tea"], "answerIndex": 0 },
-          { "id": "u2-q3", "text": "\"What time is it?\" гэдэг ямар асуулт вэ?", "options": ["Чи хэн бэ?", "Хэдэн цаг болж байна?", "Энэ хэд вэ?"], "answerIndex": 1 },
-          { "id": "u2-q4", "text": "\"How much is it?\" гэж хаана хамгийн их асуух вэ?", "options": ["Дэлгүүрт", "Унтлагын өрөөнд", "Номын санд"], "answerIndex": 0 }
+          {
+            "id": "u2-q1",
+            "text": "\"Mother\" гэдэг хэн бэ?",
+            "options": ["Аав", "Ах", "Ээж"],
+            "answerIndex": 2
+          },
+          {
+            "id": "u2-q2",
+            "text": "\"Ус\" гэдгийг англиар юу гэх вэ?",
+            "options": ["Water", "Bread", "Tea"],
+            "answerIndex": 0
+          },
+          {
+            "id": "u2-q3",
+            "text": "\"What time is it?\" гэдэг ямар асуулт вэ?",
+            "options": ["Чи хэн бэ?", "Хэдэн цаг болж байна?", "Энэ хэд вэ?"],
+            "answerIndex": 1
+          },
+          {
+            "id": "u2-q4",
+            "text": "\"How much is it?\" гэж хаана хамгийн их асуух вэ?",
+            "options": ["Дэлгүүрт", "Унтлагын өрөөнд", "Номын санд"],
+            "answerIndex": 0
+          }
         ]
       }
     },
@@ -49,11 +154,41 @@
       "title": "Бүлэг 3: Аялал",
       "comingSoon": true,
       "lessons": [
-        { "id": "u3-l1", "title": "Нисэх буудал", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 },
-        { "id": "u3-l2", "title": "Зочид буудал", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 },
-        { "id": "u3-l3", "title": "Зам асуух", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 },
-        { "id": "u3-l4", "title": "Тээвэр", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 },
-        { "id": "u3-l5", "title": "Ресторанд", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 }
+        {
+          "id": "u3-l1",
+          "title": "Нисэх буудал",
+          "description": "Удахгүй нэмэгдэнэ.",
+          "videoUrl": "",
+          "durationSec": 0
+        },
+        {
+          "id": "u3-l2",
+          "title": "Зочид буудал",
+          "description": "Удахгүй нэмэгдэнэ.",
+          "videoUrl": "",
+          "durationSec": 0
+        },
+        {
+          "id": "u3-l3",
+          "title": "Зам асуух",
+          "description": "Удахгүй нэмэгдэнэ.",
+          "videoUrl": "",
+          "durationSec": 0
+        },
+        {
+          "id": "u3-l4",
+          "title": "Тээвэр",
+          "description": "Удахгүй нэмэгдэнэ.",
+          "videoUrl": "",
+          "durationSec": 0
+        },
+        {
+          "id": "u3-l5",
+          "title": "Ресторанд",
+          "description": "Удахгүй нэмэгдэнэ.",
+          "videoUrl": "",
+          "durationSec": 0
+        }
       ],
       "quiz": { "id": "u3-quiz", "passPercent": 60, "questions": [] }
     }

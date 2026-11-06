@@ -94,5 +94,11 @@ export function VideoLessonPlayer({
 
 const styles = StyleSheet.create({
   // Explicit size: on the web a <video> with only absolute insets keeps its intrinsic size and overflows.
-  video: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
+  video: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+  },
 });

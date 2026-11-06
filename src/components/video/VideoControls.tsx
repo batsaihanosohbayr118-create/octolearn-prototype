@@ -1,21 +1,30 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, PanResponder, Pressable, StyleSheet, View, type GestureResponderEvent } from 'react-native';
+import {
+  ActivityIndicator,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  View,
+  type GestureResponderEvent,
+} from 'react-native';
 
 import { formatTime } from '@/domain/video';
 import { colors, MIN_TOUCH_TARGET, spacing } from '@/theme';
 
-import { AppText, type IconName } from './ui';
+import { AppText, type IconName } from '@/components/ui';
 
 const KEYBOARD_SEEK_SEC = 10;
 const THUMB_SIZE = 14;
 
-function ControlButton({ icon, label, onPress, testID }: {
+interface ControlButtonProps {
   icon: IconName;
   label: string;
   onPress: () => void;
   testID: string;
-}) {
+}
+
+function ControlButton({ icon, label, onPress, testID }: ControlButtonProps) {
   return (
     <Pressable
       testID={testID}
@@ -29,12 +38,14 @@ function ControlButton({ icon, label, onPress, testID }: {
   );
 }
 
-function SeekBar({ currentTime, duration, onSeek, onDraggingChange }: {
+interface SeekBarProps {
   currentTime: number;
   duration: number;
   onSeek: (seconds: number) => void;
   onDraggingChange: (dragging: boolean) => void;
-}) {
+}
+
+function SeekBar({ currentTime, duration, onSeek, onDraggingChange }: SeekBarProps) {
   const [width, setWidth] = useState(0);
   const [dragRatio, setDragRatio] = useState<number | null>(null);
 
@@ -138,7 +149,12 @@ export function VideoControls({
         <AppText testID="video-time" variant="caption" color={colors.onColor} style={styles.time}>
           {formatTime(currentTime)} / {formatTime(duration)}
         </AppText>
-        <SeekBar currentTime={currentTime} duration={duration} onSeek={onSeek} onDraggingChange={onDraggingChange} />
+        <SeekBar
+          currentTime={currentTime}
+          duration={duration}
+          onSeek={onSeek}
+          onDraggingChange={onDraggingChange}
+        />
         <ControlButton
           testID="video-fullscreen"
           icon={fullscreen ? 'contract' : 'expand'}
@@ -151,8 +167,13 @@ export function VideoControls({
 }
 
 const styles = StyleSheet.create({
-  scrim: { backgroundColor: 'rgba(0, 0, 0, 0.45)' },
-  center: { alignItems: 'center', justifyContent: 'center' },
+  scrim: {
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  },
+  center: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   playButton: {
     width: 64,
     height: 64,
@@ -170,11 +191,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
-  time: { minWidth: 76 },
-  controlButton: { width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET, alignItems: 'center', justifyContent: 'center' },
-  seekHit: { flex: 1, height: MIN_TOUCH_TARGET, justifyContent: 'center' },
-  seekTrack: { height: 4, borderRadius: 2, backgroundColor: 'rgba(255, 255, 255, 0.35)', overflow: 'hidden' },
-  seekFill: { height: 4, backgroundColor: colors.onColor },
+  time: {
+    minWidth: 76,
+  },
+  controlButton: {
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  seekHit: {
+    flex: 1,
+    height: MIN_TOUCH_TARGET,
+    justifyContent: 'center',
+  },
+  seekTrack: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.35)',
+    overflow: 'hidden',
+  },
+  seekFill: {
+    height: 4,
+    backgroundColor: colors.onColor,
+  },
   seekThumb: {
     position: 'absolute',
     width: THUMB_SIZE,

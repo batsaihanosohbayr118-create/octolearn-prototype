@@ -8,12 +8,43 @@ import { colors, fonts, MAX_CONTENT_WIDTH, MIN_TOUCH_TARGET, radius, spacing } f
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
 const textVariants = StyleSheet.create({
-  display: { fontFamily: fonts.black, fontSize: 40, lineHeight: 48, color: colors.ink },
-  title: { fontFamily: fonts.black, fontSize: 24, lineHeight: 31, color: colors.ink },
-  heading: { fontFamily: fonts.heavy, fontSize: 18, lineHeight: 24, color: colors.ink },
-  body: { fontFamily: fonts.regular, fontSize: 16, lineHeight: 23, color: colors.ink },
-  caption: { fontFamily: fonts.bold, fontSize: 13, lineHeight: 18, color: colors.inkMuted },
-  label: { fontFamily: fonts.heavy, fontSize: 12, lineHeight: 16, letterSpacing: 0.8, color: colors.inkMuted },
+  display: {
+    fontFamily: fonts.black,
+    fontSize: 40,
+    lineHeight: 48,
+    color: colors.ink,
+  },
+  title: {
+    fontFamily: fonts.black,
+    fontSize: 24,
+    lineHeight: 31,
+    color: colors.ink,
+  },
+  heading: {
+    fontFamily: fonts.heavy,
+    fontSize: 18,
+    lineHeight: 24,
+    color: colors.ink,
+  },
+  body: {
+    fontFamily: fonts.regular,
+    fontSize: 16,
+    lineHeight: 23,
+    color: colors.ink,
+  },
+  caption: {
+    fontFamily: fonts.bold,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.inkMuted,
+  },
+  label: {
+    fontFamily: fonts.heavy,
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 0.8,
+    color: colors.inkMuted,
+  },
 });
 
 type AppTextProps = TextProps & { variant?: keyof typeof textVariants; color?: string };
@@ -23,7 +54,12 @@ export function AppText({ variant = 'body', color, style, ...props }: AppTextPro
 }
 
 /** Centres a phone-width column on tablets and the web. */
-export function Column({ children, fullWidth }: { children: ReactNode; fullWidth?: boolean }) {
+interface ColumnProps {
+  children: ReactNode;
+  fullWidth?: boolean;
+}
+
+export function Column({ children, fullWidth }: ColumnProps) {
   return (
     <View style={styles.columnOuter}>
       <View style={[styles.columnInner, fullWidth ? styles.columnFullWidth : null]}>{children}</View>
@@ -32,9 +68,21 @@ export function Column({ children, fullWidth }: { children: ReactNode; fullWidth
 }
 
 const buttonVariants = {
-  primary: { face: colors.primary, lip: colors.primaryDark, text: colors.onColor },
-  success: { face: colors.success, lip: colors.successDark, text: colors.onColor },
-  secondary: { face: colors.surface, lip: colors.border, text: colors.primaryDark },
+  primary: {
+    face: colors.primary,
+    lip: colors.primaryDark,
+    text: colors.onColor,
+  },
+  success: {
+    face: colors.success,
+    lip: colors.successDark,
+    text: colors.onColor,
+  },
+  secondary: {
+    face: colors.surface,
+    lip: colors.border,
+    text: colors.primaryDark,
+  },
 } as const;
 
 type GameButtonProps = {
@@ -70,7 +118,7 @@ export function GameButton({ label, onPress, variant = 'primary', icon, disabled
             variant === 'secondary' && !disabled ? styles.buttonSecondary : null,
           ]}
         >
-          {icon ? <Ionicons name={icon} size={20} color={text} /> : null}
+          {icon && <Ionicons name={icon} size={20} color={text} />}
           <AppText variant="heading" color={text} style={styles.buttonLabel}>
             {label}
           </AppText>
@@ -80,17 +128,14 @@ export function GameButton({ label, onPress, variant = 'primary', icon, disabled
   );
 }
 
-export function IconButton({
-  icon,
-  label,
-  onPress,
-  testID,
-}: {
+interface IconButtonProps {
   icon: IconName;
   label: string;
   onPress: () => void;
   testID?: string;
-}) {
+}
+
+export function IconButton({ icon, label, onPress, testID }: IconButtonProps) {
   return (
     <Pressable
       testID={testID}
@@ -105,12 +150,14 @@ export function IconButton({
   );
 }
 
-export function IconBadge({ icon, color, background, size = 40 }: {
+interface IconBadgeProps {
   icon: IconName;
   color: string;
   background: string;
   size?: number;
-}) {
+}
+
+export function IconBadge({ icon, color, background, size = 40 }: IconBadgeProps) {
   return (
     <View
       style={[
@@ -123,12 +170,14 @@ export function IconBadge({ icon, color, background, size = 40 }: {
   );
 }
 
-export function InfoChip({ icon, iconColor, background, label }: {
+interface InfoChipProps {
   icon: IconName;
   iconColor: string;
   background: string;
   label: string;
-}) {
+}
+
+export function InfoChip({ icon, iconColor, background, label }: InfoChipProps) {
   return (
     <View style={[styles.infoChip, { backgroundColor: background }]}>
       <Ionicons name={icon} size={15} color={iconColor} />
@@ -139,19 +188,21 @@ export function InfoChip({ icon, iconColor, background, label }: {
   );
 }
 
+interface ProgressBarProps {
+  value: number;
+  color?: string;
+  trackColor?: string;
+  height?: number;
+  testID?: string;
+}
+
 export function ProgressBar({
   value,
   color = colors.primary,
   trackColor = colors.track,
   height = 12,
   testID,
-}: {
-  value: number;
-  color?: string;
-  trackColor?: string;
-  height?: number;
-  testID?: string;
-}) {
+}: ProgressBarProps) {
   const clamped = Math.min(Math.max(value, 0), 1);
   const animated = useAnimatedValue(clamped);
 
@@ -182,10 +233,22 @@ export function ProgressBar({
 }
 
 const styles = StyleSheet.create({
-  columnOuter: { flex: 1, alignItems: 'center' },
-  columnInner: { flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH },
-  columnFullWidth: { maxWidth: '100%' },
-  buttonLip: { borderRadius: radius.md, marginTop: 4 },
+  columnOuter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  columnInner: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+  },
+  columnFullWidth: {
+    maxWidth: '100%',
+  },
+  buttonLip: {
+    borderRadius: radius.md,
+    marginTop: 4,
+  },
   buttonFace: {
     minHeight: 52,
     borderRadius: radius.md,
@@ -196,8 +259,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
   },
-  buttonSecondary: { borderWidth: 2, borderColor: colors.border },
-  buttonLabel: { textAlign: 'center' },
+  buttonSecondary: {
+    borderWidth: 2,
+    borderColor: colors.border,
+  },
+  buttonLabel: {
+    textAlign: 'center',
+  },
   iconButton: {
     width: MIN_TOUCH_TARGET,
     height: MIN_TOUCH_TARGET,
@@ -205,10 +273,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconButtonPressed: { backgroundColor: colors.primaryTint },
+  iconButtonPressed: {
+    backgroundColor: colors.primaryTint,
+  },
   // Full width that shrinks beside siblings in a row. flexGrow would also stretch its height in a column.
-  barTrack: { overflow: 'hidden', width: '100%', flexShrink: 1 },
-  iconBadge: { alignItems: 'center', justifyContent: 'center' },
+  barTrack: {
+    overflow: 'hidden',
+    width: '100%',
+    flexShrink: 1,
+  },
+  iconBadge: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   infoChip: {
     flexDirection: 'row',
     alignItems: 'center',

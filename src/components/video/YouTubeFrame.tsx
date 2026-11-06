@@ -13,7 +13,16 @@ const STATES: Record<string, YouTubeState> = {
   ended: 'ended',
 };
 
-export function YouTubeFrame({ ref, videoId, width, height, onReady, onError, onStateChange, onTime }: YouTubeFrameProps) {
+export function YouTubeFrame({
+  ref,
+  videoId,
+  width,
+  height,
+  onReady,
+  onError,
+  onStateChange,
+  onTime,
+}: YouTubeFrameProps) {
   const playerRef = useRef<YoutubeIframeRef>(null);
   const [isReady, setIsReady] = useState(false);
   const [play, setPlay] = useState(false);

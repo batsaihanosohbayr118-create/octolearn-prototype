@@ -3,7 +3,14 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 
-import { completeLesson, emptyProgress, getLevel, getTotalXp, recordQuizAttempt, sanitizeProgress } from '@/domain/progress';
+import {
+  completeLesson,
+  emptyProgress,
+  getLevel,
+  getTotalXp,
+  recordQuizAttempt,
+  sanitizeProgress,
+} from '@/domain/progress';
 import type { ProgressState, Quiz } from '@/domain/types';
 
 export type Reward = {

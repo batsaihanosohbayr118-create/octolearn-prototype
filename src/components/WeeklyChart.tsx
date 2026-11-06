@@ -25,11 +25,11 @@ export function WeeklyChart({ days }: { days: Day[] }) {
         {selected.isToday ? 'Өнөөдөр' : FULL_DAYS[selected.date.getDay()]}: {selected.xp} XP
       </AppText>
       <View style={styles.plot}>
-        {days.every((day) => day.xp === 0) ? (
+        {days.every((day) => day.xp === 0) && (
           <AppText variant="caption" pointerEvents="none" style={styles.empty}>
             Хичээл дуусгаад эхний XP-ээ аваарай
           </AppText>
-        ) : null}
+        )}
         {days.map((day, index) => {
           const isSelected = index === selectedIndex;
           return (
@@ -43,7 +43,7 @@ export function WeeklyChart({ days }: { days: Day[] }) {
               style={styles.column}
             >
               <View style={styles.barArea}>
-                {day.xp > 0 ? (
+                {day.xp > 0 && (
                   <View
                     style={[
                       styles.bar,
@@ -53,7 +53,7 @@ export function WeeklyChart({ days }: { days: Day[] }) {
                       },
                     ]}
                   />
-                ) : null}
+                )}
               </View>
               <AppText variant="caption" color={isSelected ? colors.ink : colors.inkMuted} style={styles.day}>
                 {SHORT_DAYS[day.date.getDay()]}
@@ -67,10 +67,25 @@ export function WeeklyChart({ days }: { days: Day[] }) {
 }
 
 const styles = StyleSheet.create({
-  readout: { marginTop: 2, marginBottom: spacing.md },
-  plot: { flexDirection: 'row' },
-  empty: { position: 'absolute', top: 40, left: 0, right: 0, textAlign: 'center' },
-  column: { flex: 1, alignItems: 'center', minHeight: 44 },
+  readout: {
+    marginTop: 2,
+    marginBottom: spacing.md,
+  },
+  plot: {
+    flexDirection: 'row',
+  },
+  empty: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+  },
+  column: {
+    flex: 1,
+    alignItems: 'center',
+    minHeight: 44,
+  },
   barArea: {
     alignSelf: 'stretch',
     height: PLOT_HEIGHT,
@@ -79,6 +94,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  bar: { width: 16, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
-  day: { marginTop: spacing.xs },
+  bar: {
+    width: 16,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+  },
+  day: {
+    marginTop: spacing.xs,
+  },
 });

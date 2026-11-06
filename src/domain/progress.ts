@@ -157,7 +157,8 @@ export function getCourseStats(data: CourseData, progress: ProgressState) {
   const attempted = quizzes.flatMap((quiz) => progress.quizResults[quiz.id] ?? []);
   const averageQuizPercent = attempted.length
     ? Math.round(
-        attempted.reduce((sum, result) => sum + (result.bestCorrect / result.total) * 100, 0) / attempted.length,
+        attempted.reduce((sum, result) => sum + (result.bestCorrect / result.total) * 100, 0) /
+          attempted.length,
       )
     : null;
 

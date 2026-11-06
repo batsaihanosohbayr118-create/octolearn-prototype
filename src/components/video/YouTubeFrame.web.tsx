@@ -56,7 +56,16 @@ function loadYouTubeApi(): Promise<YouTubeApi> {
   return apiPromise;
 }
 
-export function YouTubeFrame({ ref, videoId, width, height, onReady, onError, onStateChange, onTime }: YouTubeFrameProps) {
+export function YouTubeFrame({
+  ref,
+  videoId,
+  width,
+  height,
+  onReady,
+  onError,
+  onStateChange,
+  onTime,
+}: YouTubeFrameProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<WebPlayer | null>(null);
 

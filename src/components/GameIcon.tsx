@@ -11,6 +11,18 @@ const ICONS = {
 export const GAME_ICON_ASSETS = Object.values(ICONS);
 
 /** Full-colour game art. Decorative: the text beside it carries the meaning for screen readers. */
-export function GameIcon({ name, size }: { name: keyof typeof ICONS; size: number }) {
-  return <Image source={ICONS[name]} accessible={false} resizeMode="contain" style={{ width: size, height: size }} />;
+interface GameIconProps {
+  name: keyof typeof ICONS;
+  size: number;
+}
+
+export function GameIcon({ name, size }: GameIconProps) {
+  return (
+    <Image
+      source={ICONS[name]}
+      accessible={false}
+      resizeMode="contain"
+      style={{ width: size, height: size }}
+    />
+  );
 }

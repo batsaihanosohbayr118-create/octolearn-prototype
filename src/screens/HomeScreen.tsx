@@ -5,8 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GameIcon } from '@/components/GameIcon';
 import { OctoMark } from '@/components/OctoMark';
-import { useToast } from '@/components/overlays';
-import { PathMap } from '@/components/PathMap';
+import { useToast } from '@/components/feedback/useToast';
+import { PathMap } from '@/components/path/PathMap';
 import { AppText, Column, ProgressBar } from '@/components/ui';
 import { courseData, pathItems } from '@/domain/course';
 import { computePathLayout } from '@/domain/pathLayout';
@@ -16,9 +16,7 @@ import { useProgress } from '@/store/progressStore';
 import { colors, radius, spacing } from '@/theme';
 
 const [subject, level] = courseData.course.title.split(' — ');
-
-/** Lets the screen transition finish, so that the learner sees the bar grow. */
-const PROGRESS_ANIMATION_DELAY_MS = 350;
+const PROGRESS_ANIMATION_DELAY_MS = 350; // Дэлгэц шилжих үед явц өсөхийг харуулах хугацаа
 
 function lockedMessage(item: PathItem): string {
   if (item.unit.comingSoon) return 'Энэ бүлэг тун удахгүй нээгдэнэ';
@@ -26,13 +24,15 @@ function lockedMessage(item: PathItem): string {
   return 'Өмнөх хичээлээ эхлээд дуусгана уу';
 }
 
-function StatPill({ icon, testID, background, value, label }: {
+interface StatPillProps {
   icon: ReactNode;
   testID: string;
   background: string;
   value: string;
   label: string;
-}) {
+}
+
+function StatPill({ icon, testID, background, value, label }: StatPillProps) {
   return (
     <View accessibilityLabel={label} style={[styles.pill, { backgroundColor: background }]}>
       {icon}
@@ -47,6 +47,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const progress = useProgress();
   const { show, toast } = useToast();
+
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const [mapWidth, setMapWidth] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(0);
@@ -60,7 +61,7 @@ export default function HomeScreen() {
   const activeNode = layout?.nodes.find((node) => statuses[node.item.id] === 'active');
   const activeY = activeNode?.y;
 
-  // Brings the current lesson into view on open and whenever a finished lesson moves it.
+  // Идэвхтэй хичээлийг дэлгэцийн харагдах хэсэгт авчрах
   useFocusEffect(
     useCallback(() => {
       if (activeY === undefined || !viewportHeight) return;
@@ -71,7 +72,7 @@ export default function HomeScreen() {
     }, [activeY, viewportHeight]),
   );
 
-  // Progress changes while a lesson covers this screen, so the bar catches up once it is back in view.
+  // Явцын хувийг шинэчлэх анимаци
   const [barPercent, setBarPercent] = useState(stats.percent);
   useFocusEffect(
     useCallback(() => {
@@ -90,6 +91,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.screen}>
+      {/* Top Bar */}
       <View style={[styles.topBar, { paddingTop: insets.top + spacing.sm }]}>
         <View style={styles.topBarInner}>
           <View style={styles.topRow}>
@@ -98,11 +100,11 @@ export default function HomeScreen() {
               <AppText numberOfLines={1} variant="heading">
                 {subject}
               </AppText>
-              {level ? (
+              {level !== undefined && (
                 <AppText numberOfLines={1} variant="caption">
                   {level}
                 </AppText>
-              ) : null}
+              )}
             </View>
             <StatPill
               testID="pill-flame"
@@ -119,18 +121,22 @@ export default function HomeScreen() {
               label={`Нийт ${totalXp} XP`}
             />
           </View>
+
           <View style={styles.summaryRow}>
             <AppText testID="course-summary" variant="caption">
-              {stats.lessonsDone} / {stats.lessonsTotal} хичээл · {stats.quizzesPassed} / {stats.quizzesTotal} шалгалт
+              {stats.lessonsDone} / {stats.lessonsTotal} хичээл · {stats.quizzesPassed} / {stats.quizzesTotal}{' '}
+              шалгалт
             </AppText>
             <AppText testID="course-percent" variant="caption" color={colors.primaryDark}>
               {stats.percent}%
             </AppText>
           </View>
+
           <ProgressBar testID="course-progress" value={barPercent / 100} height={10} />
         </View>
       </View>
 
+      {/* Main Body / Path Map */}
       <View style={styles.body}>
         <Column>
           <ScrollView
@@ -142,13 +148,14 @@ export default function HomeScreen() {
               setViewportHeight(event.nativeEvent.layout.height);
             }}
           >
-            {pathItems.length === 0 ? (
+            {pathItems.length === 0 && (
               <AppText color={colors.inkMuted} style={styles.empty}>
                 Одоогоор хичээл байхгүй байна.
               </AppText>
-            ) : layout ? (
+            )}
+            {layout && (
               <PathMap layout={layout} width={mapWidth} statuses={statuses} onPressItem={openItem} />
-            ) : null}
+            )}
           </ScrollView>
           {toast}
         </Column>
@@ -158,7 +165,10 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   topBar: {
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
@@ -172,8 +182,15 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
     gap: spacing.sm,
   },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 40 },
-  courseTitle: { flex: 1 },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: 40,
+  },
+  courseTitle: {
+    flex: 1,
+  },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -182,7 +199,16 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: radius.pill,
   },
-  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  body: { flex: 1 },
-  empty: { textAlign: 'center', marginTop: spacing.xxl },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  body: {
+    flex: 1,
+  },
+  empty: {
+    textAlign: 'center',
+    marginTop: spacing.xxl,
+  },
 });

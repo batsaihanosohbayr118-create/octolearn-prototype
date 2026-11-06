@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { colors, radius, spacing } from '@/theme';
 
-import { AppText, GameButton } from './ui';
+import { AppText, GameButton } from '@/components/ui';
 
 export const videoFrameStyle = {
   width: '100%',
@@ -13,7 +13,12 @@ export const videoFrameStyle = {
   overflow: 'hidden',
 } as const;
 
-export function VideoError({ code, onRetry }: { code?: string | number; onRetry: () => void }) {
+interface VideoErrorProps {
+  code?: string | number;
+  onRetry: () => void;
+}
+
+export function VideoError({ code, onRetry }: VideoErrorProps) {
   return (
     <View testID="video-error" style={[videoFrameStyle, styles.centered]}>
       <Ionicons name="cloud-offline-outline" size={36} color={colors.onColor} />
@@ -40,7 +45,16 @@ export function VideoLoading() {
 }
 
 const styles = StyleSheet.create({
-  centered: { alignItems: 'center', justifyContent: 'center', gap: spacing.sm, padding: spacing.md },
-  errorText: { textAlign: 'center' },
-  retry: { minWidth: 190 },
+  centered: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+  },
+  errorText: {
+    textAlign: 'center',
+  },
+  retry: {
+    minWidth: 190,
+  },
 });

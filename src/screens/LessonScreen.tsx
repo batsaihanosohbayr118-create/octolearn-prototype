@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { BackHandler, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { LessonCompleteModal } from '@/components/overlays';
+import { LessonCompleteModal } from '@/components/feedback/LessonCompleteModal';
 import { AppText, Column, GameButton, IconBadge, IconButton, InfoChip } from '@/components/ui';
-import { VideoLessonPlayer } from '@/components/VideoLessonPlayer';
+import { VideoLessonPlayer } from '@/components/video/VideoLessonPlayer';
 import { findNextPathItem } from '@/domain/course';
 import { getStreak, isWatchedEnough, WATCHED_THRESHOLD } from '@/domain/progress';
 import type { PathItem } from '@/domain/types';
@@ -20,29 +20,34 @@ type LessonItem = Extract<PathItem, { kind: 'lesson' }>;
 export function LessonScreen({ item }: { item: LessonItem }) {
   const insets = useSafeAreaInsets();
   const { lesson, unit, unitNumber, lessonNumber } = item;
+
+  // Store & Progress
   const completeLesson = useProgressStore((state) => state.completeLesson);
   const progress = useProgress();
   const isCompleted = progress.completedLessons.includes(lesson.id);
 
-  // Highest point reached, so rewinding never disables the button again.
+  // Component States
   const [watched, setWatched] = useState(0);
   const [reward, setReward] = useState<Reward | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
-  const handleProgress = useCallback((ratio: number) => setWatched((best) => Math.max(best, ratio)), []);
 
-  // A rewatch, as opposed to the lesson that was finished just now behind the reward modal.
+  // Computed Values
   const alreadyDone = isCompleted && reward === null;
-
   const canFinish = alreadyDone || isWatchedEnough(watched, 1);
   const nextItem = findNextPathItem(lesson.id);
 
+  const handleProgress = useCallback((ratio: number) => {
+    setWatched((best) => Math.max(best, ratio));
+  }, []);
+
+  // Fullscreen orientation handling
   useEffect(() => {
     if (!fullscreen) return;
     lockOrientation('landscape');
     return () => lockOrientation('portrait');
   }, [fullscreen]);
 
-  // In fullscreen, the hardware back button only leaves fullscreen.
+  // Handle hardware back button in fullscreen
   useFocusEffect(
     useCallback(() => {
       if (!fullscreen) return;
@@ -62,13 +67,14 @@ export function LessonScreen({ item }: { item: LessonItem }) {
     setReward(completeLesson(lesson.id));
   };
 
-  // The player keeps its place in this tree across fullscreen, so the video doesn't restart.
   return (
     <View style={[styles.screen, fullscreen ? styles.fullscreenScreen : { paddingTop: insets.top }]}>
       <Stack.Screen options={{ gestureEnabled: !fullscreen }} />
       <StatusBar hidden={fullscreen} style="dark" />
+
       <Column fullWidth={fullscreen}>
-        {fullscreen ? null : (
+        {/* Header */}
+        {!fullscreen && (
           <View style={styles.header}>
             <IconButton testID="back-button" icon="arrow-back" label="Буцах" onPress={goBackToPath} />
             <AppText testID="lesson-position" variant="label" numberOfLines={1} style={styles.position}>
@@ -77,6 +83,7 @@ export function LessonScreen({ item }: { item: LessonItem }) {
           </View>
         )}
 
+        {/* Video Player */}
         <View style={fullscreen ? styles.fullscreenPlayer : styles.player}>
           <VideoLessonPlayer
             url={lesson.videoUrl}
@@ -87,9 +94,10 @@ export function LessonScreen({ item }: { item: LessonItem }) {
           />
         </View>
 
-        {fullscreen ? null : (
+        {/* Lesson Details & Content */}
+        {!fullscreen && (
           <ScrollView contentContainerStyle={styles.content}>
-            {isCompleted ? (
+            {isCompleted && (
               <View style={styles.chips}>
                 <InfoChip
                   icon="checkmark-circle"
@@ -98,11 +106,12 @@ export function LessonScreen({ item }: { item: LessonItem }) {
                   label="Дууссан"
                 />
               </View>
-            ) : null}
+            )}
+
             <AppText variant="title">{lesson.title}</AppText>
             <AppText color={colors.inkMuted}>{lesson.description}</AppText>
 
-            {nextItem ? (
+            {nextItem && (
               <View testID="next-step" style={styles.nextCard}>
                 <IconBadge
                   icon={nextItem.kind === 'quiz' ? 'star' : 'play'}
@@ -116,13 +125,14 @@ export function LessonScreen({ item }: { item: LessonItem }) {
                   </AppText>
                 </View>
               </View>
-            ) : null}
+            )}
           </ScrollView>
         )}
 
-        {fullscreen ? null : (
+        {/* Footer Actions */}
+        {!fullscreen && (
           <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.lg }]}>
-            {canFinish ? null : (
+            {!canFinish && (
               <AppText testID="watch-hint" variant="caption" style={styles.hint}>
                 Видеоны {Math.round(WATCHED_THRESHOLD * 100)}%-ийг үзсэний дараа идэвхжинэ
               </AppText>
@@ -139,6 +149,7 @@ export function LessonScreen({ item }: { item: LessonItem }) {
         )}
       </Column>
 
+      {/* Completion Modal */}
       <LessonCompleteModal
         visible={reward !== null}
         xpEarned={reward?.xpEarned ?? 0}
@@ -152,14 +163,37 @@ export function LessonScreen({ item }: { item: LessonItem }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  fullscreenScreen: { backgroundColor: '#000000' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingHorizontal: spacing.sm, minHeight: 52 },
-  position: { flex: 1 },
-  player: { paddingHorizontal: spacing.lg },
-  fullscreenPlayer: { flex: 1 },
-  content: { padding: spacing.lg, gap: spacing.sm },
-  chips: { flexDirection: 'row', gap: spacing.sm },
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  fullscreenScreen: {
+    backgroundColor: '#000000',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    minHeight: 52,
+  },
+  position: {
+    flex: 1,
+  },
+  player: {
+    paddingHorizontal: spacing.lg,
+  },
+  fullscreenPlayer: {
+    flex: 1,
+  },
+  content: {
+    padding: spacing.lg,
+    gap: spacing.sm,
+  },
+  chips: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
   nextCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -170,7 +204,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     ...cardShadow,
   },
-  nextText: { flex: 1, gap: 2 },
+  nextText: {
+    flex: 1,
+    gap: 2,
+  },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
@@ -179,5 +216,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-  hint: { textAlign: 'center' },
+  hint: {
+    textAlign: 'center',
+  },
 });
