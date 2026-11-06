@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -22,6 +22,7 @@ export function LessonScreen({ item }: { item: LessonItem }) {
   // Highest point reached, so rewinding never disables the button again.
   const [watched, setWatched] = useState(0);
   const [reward, setReward] = useState<Reward | null>(null);
+  const handleProgress = useCallback((ratio: number) => setWatched((best) => Math.max(best, ratio)), []);
 
   // A rewatch, as opposed to the lesson that was finished just now behind the reward modal.
   const alreadyDone = isCompleted && reward === null;
@@ -50,7 +51,7 @@ export function LessonScreen({ item }: { item: LessonItem }) {
           <VideoLessonPlayer
             url={lesson.videoUrl}
             paused={reward !== null}
-            onProgress={(ratio) => setWatched((best) => Math.max(best, ratio))}
+            onProgress={handleProgress}
           />
           <AppText variant="title">{lesson.title}</AppText>
           <AppText color={colors.inkMuted}>{lesson.description}</AppText>

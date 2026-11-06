@@ -16,6 +16,7 @@ import {
   sanitizeProgress,
 } from '../progress';
 import type { CourseData, ProgressState, Quiz } from '../types';
+import { getYouTubeId } from '../video';
 
 const items = flattenCourse(courseData);
 const NOW = new Date(2026, 10, 6, 12);
@@ -214,6 +215,29 @@ describe('sanitizeProgress', () => {
     expect(result.completedLessons).toEqual(['u1-l1']);
     expect(Object.keys(result.quizResults)).toEqual(['good']);
     expect(result.xpByDay).toEqual({ '2026-11-06': 10 });
+  });
+});
+
+describe('getYouTubeId', () => {
+  it.each([
+    'https://www.youtube.com/watch?v=CilH8QDYJyQ',
+    'https://m.youtube.com/watch?pp=abc&v=CilH8QDYJyQ',
+    'https://youtu.be/CilH8QDYJyQ?t=5',
+    'https://www.youtube.com/embed/CilH8QDYJyQ',
+    'https://www.youtube.com/shorts/CilH8QDYJyQ',
+  ])('reads the id from %s', (url) => {
+    expect(getYouTubeId(url)).toBe('CilH8QDYJyQ');
+  });
+
+  it('returns null for video files and empty urls', () => {
+    expect(getYouTubeId('https://example.com/lesson1.mp4')).toBeNull();
+    expect(getYouTubeId('')).toBeNull();
+  });
+
+  it('finds a video id in every playable lesson', () => {
+    for (const unit of courseData.units.filter(({ comingSoon }) => !comingSoon)) {
+      for (const lesson of unit.lessons) expect(getYouTubeId(lesson.videoUrl)).not.toBeNull();
+    }
   });
 });
 

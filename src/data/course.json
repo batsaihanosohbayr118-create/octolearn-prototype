@@ -5,11 +5,11 @@
       "id": "u1",
       "title": "Бүлэг 1: Танилцах",
       "lessons": [
-        { "id": "u1-l1", "title": "Мэндчилгээ", "description": "Hello, Hi, Good morning — өдөр тутмын мэндчилгээг сурна.", "videoUrl": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4", "durationSec": 10 },
-        { "id": "u1-l2", "title": "Өөрийгөө танилцуулах", "description": "My name is... гэж нэрээ хэлж, бусдаас нэрийг нь асууна.", "videoUrl": "https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4", "durationSec": 10 },
-        { "id": "u1-l3", "title": "Цагаан толгой", "description": "A-аас Z хүртэлх үсгийн дуудлагыг давтана.", "videoUrl": "https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4", "durationSec": 10 },
-        { "id": "u1-l4", "title": "Тоо 1–10", "description": "One, two, three... нэгээс арав хүртэл тоолж сурна.", "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", "durationSec": 5 },
-        { "id": "u1-l5", "title": "Өнгөнүүд", "description": "Red, blue, green — үндсэн өнгөний нэрсийг сурна.", "videoUrl": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4", "durationSec": 10 }
+        { "id": "u1-l1", "title": "Мэндчилгээ", "description": "Hello, Hi, Good morning — өдөр тутмын мэндчилгээг сурна.", "videoUrl": "https://www.youtube.com/watch?v=CilH8QDYJyQ", "durationSec": 184 },
+        { "id": "u1-l2", "title": "Өөрийгөө танилцуулах", "description": "My name is... гэж нэрээ хэлж, бусдаас нэрийг нь асууна.", "videoUrl": "https://www.youtube.com/watch?v=R0c99La3IUg", "durationSec": 73 },
+        { "id": "u1-l3", "title": "Цагаан толгой", "description": "A-аас Z хүртэлх үсгийн дуудлагыг давтана.", "videoUrl": "https://www.youtube.com/watch?v=KKHf5htjTcY", "durationSec": 162 },
+        { "id": "u1-l4", "title": "Тоо 1–10", "description": "One, two, three... нэгээс арав хүртэл тоолж сурна.", "videoUrl": "https://www.youtube.com/watch?v=5mt_mYF7ov8", "durationSec": 111 },
+        { "id": "u1-l5", "title": "Өнгөнүүд", "description": "Red, blue, green — үндсэн өнгөний нэрсийг сурна.", "videoUrl": "https://www.youtube.com/watch?v=RjKN25fvp1c", "durationSec": 116 }
       ],
       "quiz": {
         "id": "u1-quiz",
@@ -27,11 +27,11 @@
       "id": "u2",
       "title": "Бүлэг 2: Өдөр тутам",
       "lessons": [
-        { "id": "u2-l1", "title": "Гэр бүл", "description": "Mother, father, sister — гэр бүлийн гишүүдийн нэр.", "videoUrl": "https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4", "durationSec": 10 },
-        { "id": "u2-l2", "title": "Хоол, ундаа", "description": "Bread, water, tea — хоол ундааны үгсийг сурна.", "videoUrl": "https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4", "durationSec": 10 },
-        { "id": "u2-l3", "title": "Цаг хэлэх", "description": "What time is it? — цаг асууж, хариулж сурна.", "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", "durationSec": 5 },
-        { "id": "u2-l4", "title": "Өдрийн хуваарь", "description": "I wake up at seven — өдрийн хуваариа ярьж сурна.", "videoUrl": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4", "durationSec": 10 },
-        { "id": "u2-l5", "title": "Дэлгүүрт", "description": "How much is it? — дэлгүүрт үнэ асууж сурна.", "videoUrl": "https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4", "durationSec": 10 }
+        { "id": "u2-l1", "title": "Гэр бүл", "description": "Mother, father, sister — гэр бүлийн гишүүдийн нэр.", "videoUrl": "https://www.youtube.com/watch?v=v16UI040UTo", "durationSec": 135 },
+        { "id": "u2-l2", "title": "Хоол, ундаа", "description": "Bread, water, tea — хоол ундааны үгсийг сурна.", "videoUrl": "https://www.youtube.com/watch?v=unv3EbqRS6w", "durationSec": 203 },
+        { "id": "u2-l3", "title": "Цаг хэлэх", "description": "What time is it? — цаг асууж, хариулж сурна.", "videoUrl": "https://www.youtube.com/watch?v=OL_H0dOE-Yg", "durationSec": 261 },
+        { "id": "u2-l4", "title": "Өдрийн хуваарь", "description": "I wake up at seven — өдрийн хуваариа ярьж сурна.", "videoUrl": "https://www.youtube.com/watch?v=2yNMy5et9kI", "durationSec": 84 },
+        { "id": "u2-l5", "title": "Дэлгүүрт", "description": "How much is it? — дэлгүүрт үнэ асууж сурна.", "videoUrl": "https://www.youtube.com/watch?v=P5Vi4j1F4sE", "durationSec": 152 }
       ],
       "quiz": {
         "id": "u2-quiz",
