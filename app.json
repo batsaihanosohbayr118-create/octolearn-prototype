@@ -40,6 +40,16 @@
         }
       ]
     ],
-    "scheme": "octolearn"
+    "scheme": "octolearn",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "17caf368-c8d7-4e32-8bbd-3e91453b717c"
+      }
+    }
   }
 }

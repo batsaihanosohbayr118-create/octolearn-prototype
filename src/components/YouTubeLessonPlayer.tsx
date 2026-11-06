@@ -15,6 +15,8 @@ const CONTROLS_HIDE_MS = 3000;
 /** Some WebViews refuse to start a video from code, without a tap on the video itself. */
 const START_TIMEOUT_MS = 8000;
 const MIN_ADVANCE_SEC = 0.1;
+/** Taps here reach YouTube's own play button under the poster: browsers trust a real tap on the video. */
+const PLAY_HOLE_SIZE = 76;
 
 type YouTubeLessonPlayerProps = {
   videoId: string;
@@ -25,6 +27,37 @@ type YouTubeLessonPlayerProps = {
   onProgress: (ratio: number) => void;
   onRetry: () => void;
 };
+
+/**
+ * Covers the frame except for a hole over YouTube's play button, so that YouTube's links stay out of reach.
+ * Taps on the covered part start the video from code, which some WebViews refuse.
+ */
+function PosterTapGuard({ width, height, label, onPress }: {
+  width: number;
+  height: number;
+  label: string;
+  onPress: () => void;
+}) {
+  const sideWidth = (width - PLAY_HOLE_SIZE) / 2;
+  const stripHeight = (height - PLAY_HOLE_SIZE) / 2;
+  const strips = [
+    { top: 0, left: 0, right: 0, height: stripHeight },
+    { bottom: 0, left: 0, right: 0, height: stripHeight },
+    { top: stripHeight, left: 0, width: sideWidth, height: PLAY_HOLE_SIZE },
+    { top: stripHeight, right: 0, width: sideWidth, height: PLAY_HOLE_SIZE },
+  ];
+  return strips.map((strip, index) => (
+    <Pressable
+      key={index}
+      testID={`poster-guard-${index}`}
+      accessible={index === 0}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={[styles.guard, strip]}
+    />
+  ));
+}
 
 function FadeIn({ children }: { children: ReactNode }) {
   const opacity = useAnimatedValue(0);
@@ -148,26 +181,40 @@ export function YouTubeLessonPlayer({
       ) : null}
 
       {startWasRefused ? null : showPoster ? (
-        <Pressable
-          testID="video-start"
-          accessibilityRole="button"
-          accessibilityLabel={state === 'ended' ? 'Дахин үзэх' : 'Видео тоглуулах'}
-          disabled={!isReady || isStarting}
-          onPress={start}
-          style={[StyleSheet.absoluteFill, styles.poster]}
-        >
-          <Image
-            source={{ uri: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` }}
-            resizeMode="cover"
-            style={StyleSheet.absoluteFill}
-          />
-          {isReady ? (
-            <View style={styles.startButton}>
-              <Ionicons name={state === 'ended' ? 'refresh' : 'play'} size={36} color={colors.onColor} />
-            </View>
-          ) : null}
-          {!isReady || isStarting ? <VideoLoading /> : null}
-        </Pressable>
+        <>
+          <View testID="video-start" pointerEvents="none" style={[StyleSheet.absoluteFill, styles.poster]}>
+            <Image
+              source={{ uri: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` }}
+              resizeMode="cover"
+              style={StyleSheet.absoluteFill}
+            />
+            {isReady && !isStarting ? (
+              <View style={styles.startButton}>
+                <Ionicons name={state === 'ended' ? 'refresh' : 'play'} size={36} color={colors.onColor} />
+              </View>
+            ) : (
+              <VideoLoading />
+            )}
+          </View>
+          {state === 'idle' && isReady && !isStarting ? (
+            <PosterTapGuard
+              width={size.width}
+              height={size.height}
+              label="Видео тоглуулах"
+              onPress={start}
+            />
+          ) : (
+            // Also covers YouTube's end screen, whose links lead away from the lesson.
+            <Pressable
+              testID="poster-blocker"
+              accessibilityRole="button"
+              accessibilityLabel="Дахин үзэх"
+              disabled={state !== 'ended'}
+              onPress={start}
+              style={StyleSheet.absoluteFill}
+            />
+          )}
+        </>
       ) : (
         <>
           {/* Keeps taps on our controls, away from YouTube's title and links underneath. */}
@@ -201,6 +248,7 @@ export function YouTubeLessonPlayer({
 
 const styles = StyleSheet.create({
   fullscreenFrame: { flex: 1, width: '100%', backgroundColor: '#000000', overflow: 'hidden' },
+  guard: { position: 'absolute' },
   poster: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000000' },
   startButton: {
     width: 72,

@@ -13,7 +13,7 @@ import { AppText, type IconName } from './ui';
 
 const LESSON_SIZE = 72;
 const QUIZ_SIZE = 64; // Rotated 45°, so its diagonal is about 90.
-const CAPTION_WIDTH = 164;
+const CAPTION_WIDTH = 190;
 const LIP = 6;
 
 const lessonPalette: Record<ItemStatus, { face: string; lip: string; icon: IconName }> = {

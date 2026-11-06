@@ -3,6 +3,9 @@ import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-ifram
 
 import { YOUTUBE_POLL_MS, type YouTubeFrameProps, type YouTubeState } from './YouTubeFrame.types';
 
+/** The page react-native-youtube-iframe hosts the player on. Nothing else may take over the WebView. */
+const PLAYER_PAGE = 'https://lonelycpp.github.io/react-native-youtube-iframe/';
+
 const STATES: Record<string, YouTubeState> = {
   playing: 'playing',
   paused: 'paused',
@@ -44,6 +47,12 @@ export function YouTubeFrame({ ref, videoId, width, height, onReady, onError, on
       height={height}
       play={play}
       initialPlayerParams={{ controls: false, rel: false, preventFullScreen: true, iv_load_policy: 3 }}
+      webViewProps={{
+        // YouTube's title and logo are links; they must not throw the learner out of the lesson.
+        setSupportMultipleWindows: false,
+        onShouldStartLoadWithRequest: ({ url, isTopFrame }: { url: string; isTopFrame?: boolean }) =>
+          isTopFrame === false || url.startsWith(PLAYER_PAGE),
+      }}
       onReady={() => {
         setIsReady(true);
         onReady();
