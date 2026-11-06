@@ -5,14 +5,15 @@ import { BackHandler, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LessonCompleteModal } from '@/components/overlays';
-import { AppText, Column, GameButton, IconButton } from '@/components/ui';
+import { AppText, Column, GameButton, IconBadge, IconButton, InfoChip } from '@/components/ui';
 import { VideoLessonPlayer } from '@/components/VideoLessonPlayer';
-import { isWatchedEnough, WATCHED_THRESHOLD } from '@/domain/progress';
+import { findNextPathItem } from '@/domain/course';
+import { getStreak, isWatchedEnough, WATCHED_THRESHOLD } from '@/domain/progress';
 import type { PathItem } from '@/domain/types';
 import { goBackToPath } from '@/lib/navigation';
 import { lockOrientation } from '@/lib/orientation';
 import { useProgress, useProgressStore, type Reward } from '@/store/progressStore';
-import { colors, spacing } from '@/theme';
+import { cardShadow, colors, radius, spacing } from '@/theme';
 
 type LessonItem = Extract<PathItem, { kind: 'lesson' }>;
 
@@ -20,7 +21,8 @@ export function LessonScreen({ item }: { item: LessonItem }) {
   const insets = useSafeAreaInsets();
   const { lesson, unit, unitNumber, lessonNumber } = item;
   const completeLesson = useProgressStore((state) => state.completeLesson);
-  const isCompleted = useProgress().completedLessons.includes(lesson.id);
+  const progress = useProgress();
+  const isCompleted = progress.completedLessons.includes(lesson.id);
 
   // Highest point reached, so rewinding never disables the button again.
   const [watched, setWatched] = useState(0);
@@ -32,6 +34,7 @@ export function LessonScreen({ item }: { item: LessonItem }) {
   const alreadyDone = isCompleted && reward === null;
 
   const canFinish = alreadyDone || isWatchedEnough(watched, 1);
+  const nextItem = findNextPathItem(lesson.id);
 
   useEffect(() => {
     if (!fullscreen) return;
@@ -86,8 +89,34 @@ export function LessonScreen({ item }: { item: LessonItem }) {
 
         {fullscreen ? null : (
           <ScrollView contentContainerStyle={styles.content}>
+            {isCompleted ? (
+              <View style={styles.chips}>
+                <InfoChip
+                  icon="checkmark-circle"
+                  iconColor={colors.successDark}
+                  background={colors.successTint}
+                  label="Дууссан"
+                />
+              </View>
+            ) : null}
             <AppText variant="title">{lesson.title}</AppText>
             <AppText color={colors.inkMuted}>{lesson.description}</AppText>
+
+            {nextItem ? (
+              <View testID="next-step" style={styles.nextCard}>
+                <IconBadge
+                  icon={nextItem.kind === 'quiz' ? 'star' : 'play'}
+                  color={colors.primaryDark}
+                  background={colors.primaryTint}
+                />
+                <View style={styles.nextText}>
+                  <AppText variant="label">ДАРААГИЙН АЛХАМ</AppText>
+                  <AppText variant="heading" numberOfLines={1}>
+                    {nextItem.kind === 'quiz' ? 'Бүлгийн шалгалт' : nextItem.lesson.title}
+                  </AppText>
+                </View>
+              </View>
+            ) : null}
           </ScrollView>
         )}
 
@@ -113,8 +142,9 @@ export function LessonScreen({ item }: { item: LessonItem }) {
       <LessonCompleteModal
         visible={reward !== null}
         xpEarned={reward?.xpEarned ?? 0}
+        streak={getStreak(progress.xpByDay, new Date())}
         levelUpTo={reward?.levelUpTo ?? null}
-        message="Дараагийн алхам нээгдлээ."
+        nextTitle={nextItem ? (nextItem.kind === 'quiz' ? 'Бүлгийн шалгалт' : nextItem.lesson.title) : null}
         onContinue={goBackToPath}
       />
     </View>
@@ -129,6 +159,25 @@ const styles = StyleSheet.create({
   player: { paddingHorizontal: spacing.lg },
   fullscreenPlayer: { flex: 1 },
   content: { padding: spacing.lg, gap: spacing.sm },
-  footer: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, gap: spacing.sm },
+  chips: { flexDirection: 'row', gap: spacing.sm },
+  nextCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    ...cardShadow,
+  },
+  nextText: { flex: 1, gap: 2 },
+  footer: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
   hint: { textAlign: 'center' },
 });

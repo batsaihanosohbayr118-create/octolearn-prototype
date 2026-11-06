@@ -1,25 +1,49 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { BackHandler, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { BackHandler, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Confetti, ConfirmDialog, PopIn } from '@/components/overlays';
+import { GameIcon } from '@/components/GameIcon';
+import { OctoMark } from '@/components/OctoMark';
+import { Confetti, ConfirmDialog, PopIn, RewardTile, Sunburst } from '@/components/overlays';
 import { AppText, Column, GameButton, IconButton, ProgressBar, type IconName } from '@/components/ui';
-import { goBackToPath } from '@/lib/navigation';
+import { findNextPathItem } from '@/domain/course';
+import { getStreak } from '@/domain/progress';
 import type { PathItem, Question } from '@/domain/types';
-import { useProgressStore, type Reward } from '@/store/progressStore';
-import { colors, MIN_TOUCH_TARGET, radius, spacing } from '@/theme';
+import { goBackToPath } from '@/lib/navigation';
+import { useProgress, useProgressStore, type Reward } from '@/store/progressStore';
+import { cardShadow, colors, MIN_TOUCH_TARGET, radius, spacing } from '@/theme';
 
 type QuizItem = Extract<PathItem, { kind: 'quiz' }>;
 type OptionState = 'idle' | 'selected' | 'correct' | 'wrong' | 'dimmed';
 
-const optionStyles: Record<OptionState, { background: string; border: string; icon?: IconName; iconColor?: string }> = {
-  idle: { background: colors.surface, border: colors.border },
-  selected: { background: colors.primaryTint, border: colors.primary },
-  correct: { background: colors.successTint, border: colors.success, icon: 'checkmark-circle', iconColor: colors.successDark },
-  wrong: { background: colors.dangerTint, border: colors.danger, icon: 'close-circle', iconColor: colors.dangerDark },
-  dimmed: { background: colors.surface, border: colors.border },
+const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
+const RING_SIZE = 92;
+const RING_STROKE = 10;
+const SHORT_SCREEN_HEIGHT = 700;
+
+type OptionLook = { background: string; border: string; badge: string; badgeText: string; icon?: IconName };
+
+const optionStyles: Record<OptionState, OptionLook> = {
+  idle: { background: colors.surface, border: colors.border, badge: colors.primaryTint, badgeText: colors.primaryDark },
+  selected: { background: colors.primaryTint, border: colors.primary, badge: colors.primary, badgeText: colors.onColor },
+  correct: {
+    background: colors.successTint,
+    border: colors.success,
+    badge: colors.successDark,
+    badgeText: colors.onColor,
+    icon: 'checkmark',
+  },
+  wrong: {
+    background: colors.dangerTint,
+    border: colors.danger,
+    badge: colors.dangerDark,
+    badgeText: colors.onColor,
+    icon: 'close',
+  },
+  dimmed: { background: colors.surface, border: colors.border, badge: colors.locked, badgeText: colors.lockedInk },
 };
 
 function getOptionState(index: number, question: Question, selected: number | null, checked: boolean): OptionState {
@@ -28,7 +52,8 @@ function getOptionState(index: number, question: Question, selected: number | nu
   return index === selected ? 'wrong' : 'dimmed';
 }
 
-function AnswerOption({ text, state, disabled, onPress, testID }: {
+function AnswerOption({ letter, text, state, disabled, onPress, testID }: {
+  letter: string;
   text: string;
   state: OptionState;
   disabled: boolean;
@@ -47,65 +72,157 @@ function AnswerOption({ text, state, disabled, onPress, testID }: {
       onPress={onPress}
       style={[
         styles.option,
-        { backgroundColor: look.background, borderColor: look.border, opacity: state === 'dimmed' ? 0.55 : 1 },
+        { backgroundColor: look.background, borderColor: look.border, opacity: state === 'dimmed' ? 0.6 : 1 },
       ]}
     >
+      <View style={[styles.optionBadge, { backgroundColor: look.badge }]}>
+        {look.icon ? (
+          <Ionicons name={look.icon} size={20} color={look.badgeText} />
+        ) : (
+          <AppText variant="heading" color={look.badgeText}>
+            {letter}
+          </AppText>
+        )}
+      </View>
       <AppText variant="heading" style={styles.optionText}>
         {text}
       </AppText>
-      {look.icon ? <Ionicons name={look.icon} size={26} color={look.iconColor} /> : null}
     </Pressable>
   );
 }
 
 type Attempt = Reward & { passed: boolean; correct: number };
 
+function ScoreRing({ ratio, color, children }: { ratio: number; color: string; children: React.ReactNode }) {
+  const radiusPx = (RING_SIZE - RING_STROKE) / 2;
+  const circumference = 2 * Math.PI * radiusPx;
+  const center = RING_SIZE / 2;
+  return (
+    <View style={styles.ring}>
+      <Svg width={RING_SIZE} height={RING_SIZE} style={StyleSheet.absoluteFill}>
+        <Circle cx={center} cy={center} r={radiusPx} stroke={colors.track} strokeWidth={RING_STROKE} fill="none" />
+        <Circle
+          cx={center}
+          cy={center}
+          r={radiusPx}
+          stroke={color}
+          strokeWidth={RING_STROKE}
+          strokeLinecap="round"
+          strokeDasharray={`${circumference * ratio} ${circumference}`}
+          fill="none"
+          transform={`rotate(-90 ${center} ${center})`}
+        />
+      </Svg>
+      {children}
+    </View>
+  );
+}
+
 function QuizResultView({ item, attempt, onRetry }: { item: QuizItem; attempt: Attempt; onRetry: () => void }) {
   const insets = useSafeAreaInsets();
+  const streak = getStreak(useProgress().xpByDay, new Date());
   const total = item.quiz.questions.length;
   const percent = Math.round((attempt.correct / total) * 100);
+  const nextItem = findNextPathItem(item.id);
+  // Short phones give the space to the score and rewards.
+  const isShort = useWindowDimensions().height < SHORT_SCREEN_HEIGHT;
+
+  const passMessage =
+    nextItem && !nextItem.unit.comingSoon
+      ? `${item.unit.title} дууслаа. ${nextItem.unit.title} нээгдлээ!`
+      : `${item.unit.title} дууслаа. Курсээ бүрэн дуусгалаа!`;
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View style={styles.screen}>
+      <View
+        style={[
+          styles.resultHero,
+          {
+            height: (isShort ? 120 : 208) + insets.top,
+            paddingTop: insets.top,
+            backgroundColor: attempt.passed ? colors.goldTint : colors.primaryTint,
+          },
+        ]}
+      >
+        {attempt.passed ? <Sunburst /> : null}
+        <PopIn>
+          {attempt.passed ? <GameIcon name="trophy" size={isShort ? 88 : 132} /> : <OctoMark size={isShort ? 64 : 96} />}
+        </PopIn>
+      </View>
+
       <Column>
-        <View style={[styles.resultContent, { paddingBottom: insets.bottom + spacing.lg }]}>
-          <View style={styles.resultMain}>
-            <PopIn>
-              <View style={[styles.resultBadge, { backgroundColor: attempt.passed ? colors.gold : colors.locked }]}>
-                <Ionicons
-                  name={attempt.passed ? 'trophy' : 'refresh'}
-                  size={48}
-                  color={attempt.passed ? colors.onColor : colors.ink}
-                />
-              </View>
-            </PopIn>
+        <ScrollView contentContainerStyle={styles.resultContent}>
+          <View style={styles.resultHeading}>
             <AppText testID="quiz-result-title" variant="title" style={styles.centered}>
               {attempt.passed ? 'Тэнцлээ!' : 'Дахин оролдоорой'}
             </AppText>
-            <AppText testID="quiz-score" variant="display">
-              {attempt.correct} / {total}
-            </AppText>
             <AppText color={colors.inkMuted} style={styles.centered}>
-              {attempt.passed
-                ? `${percent}% зөв хариуллаа`
-                : `${percent}% зөв. Тэнцэхийн тулд ${item.quiz.passPercent}% хэрэгтэй.`}
+              {attempt.passed ? passMessage : 'Хичээлээ эргэн санаад дахин өгөөрэй, та чадна!'}
             </AppText>
-            <View style={styles.xpChip}>
-              <Ionicons name="flash" size={20} color={colors.goldDark} />
-              <AppText testID="quiz-xp" variant="heading">
-                +{attempt.xpEarned} XP
+          </View>
+
+          <View style={styles.scoreCard}>
+            <ScoreRing ratio={attempt.correct / total} color={attempt.passed ? colors.success : colors.danger}>
+              <AppText variant="heading">{percent}%</AppText>
+            </ScoreRing>
+            <View style={styles.scoreText}>
+              <AppText testID="quiz-score" variant="title">
+                {attempt.correct} / {total}
+              </AppText>
+              <AppText variant="caption">зөв хариулт</AppText>
+              <AppText
+                variant="caption"
+                color={attempt.passed ? colors.successDark : colors.dangerDark}
+                style={styles.scoreStatus}
+              >
+                {attempt.passed ? 'Тэнцсэн' : 'Тэнцээгүй'} · Хязгаар {item.quiz.passPercent}%
               </AppText>
             </View>
-            {attempt.levelUpTo ? (
+          </View>
+
+          {attempt.passed ? (
+            <View style={styles.rewardRow}>
+              {attempt.xpEarned > 0 ? (
+                <RewardTile
+                  testID="quiz-xp"
+                  icon="bolt"
+                  value={`+${attempt.xpEarned} XP`}
+                  label="Оноо"
+                  background={colors.goldTint}
+                />
+              ) : null}
+              <RewardTile
+                testID="quiz-streak"
+                icon="flame"
+                value={`${streak} өдөр`}
+                label="Цуваа"
+                background={colors.flameTint}
+              />
+            </View>
+          ) : null}
+
+          {attempt.levelUpTo ? (
+            <View style={styles.levelUp}>
+              <GameIcon name="medal" size={28} />
               <AppText variant="heading" color={colors.primaryDark}>
                 Түвшин {attempt.levelUpTo}-д хүрлээ!
               </AppText>
-            ) : null}
-          </View>
-          <View style={styles.resultActions}>
-            <GameButton testID="quiz-continue" label="Үргэлжлүүлэх" onPress={goBackToPath} />
-            <GameButton testID="quiz-retry" variant="secondary" label="Дахин өгөх" icon="refresh" onPress={onRetry} />
-          </View>
+            </View>
+          ) : null}
+        </ScrollView>
+
+        <View style={[styles.resultActions, { paddingBottom: insets.bottom + spacing.lg }]}>
+          {attempt.passed ? (
+            <>
+              <GameButton testID="quiz-continue" label="Үргэлжлүүлэх" onPress={goBackToPath} />
+              <GameButton testID="quiz-retry" variant="secondary" label="Дахин өгөх" icon="refresh" onPress={onRetry} />
+            </>
+          ) : (
+            <>
+              <GameButton testID="quiz-retry" label="Дахин өгөх" icon="refresh" onPress={onRetry} />
+              <GameButton testID="quiz-continue" variant="secondary" label="Зам руу буцах" onPress={goBackToPath} />
+            </>
+          )}
         </View>
       </Column>
       {attempt.passed ? <Confetti /> : null}
@@ -172,6 +289,7 @@ function QuizRunner({ item, onFinish }: { item: QuizItem; onFinish: (correct: nu
               <AnswerOption
                 key={option}
                 testID={`option-${optionIndex}`}
+                letter={OPTION_LETTERS[optionIndex]}
                 text={option}
                 state={getOptionState(optionIndex, question, selected, checked)}
                 disabled={checked}
@@ -185,7 +303,7 @@ function QuizRunner({ item, onFinish }: { item: QuizItem; onFinish: (correct: nu
           style={[
             styles.footer,
             { paddingBottom: insets.bottom + spacing.lg },
-            checked ? { backgroundColor: isCorrect ? colors.successTint : colors.dangerTint } : null,
+            { backgroundColor: !checked ? colors.surface : isCorrect ? colors.successTint : colors.dangerTint },
           ]}
         >
           {checked ? (
@@ -264,25 +382,52 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderWidth: 2,
-    borderBottomWidth: 4,
     borderRadius: radius.md,
+    ...cardShadow,
   },
+  optionBadge: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   optionText: { flex: 1 },
-  footer: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, gap: spacing.md },
+  footer: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
   feedback: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   feedbackText: { flex: 1 },
-  resultContent: { flex: 1, padding: spacing.xl },
-  resultMain: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md },
-  resultBadge: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center' },
-  centered: { textAlign: 'center' },
-  xpChip: {
+  resultHero: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  resultContent: { padding: spacing.lg, gap: spacing.md },
+  resultHeading: { gap: spacing.xs },
+  scoreCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    backgroundColor: colors.goldTint,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    gap: spacing.lg,
+    padding: spacing.lg,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    ...cardShadow,
   },
-  resultActions: { gap: spacing.sm },
+  scoreText: { flex: 1 },
+  scoreStatus: { marginTop: spacing.xs },
+  rewardRow: { flexDirection: 'row', gap: spacing.sm },
+  levelUp: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.primaryTint,
+  },
+  ring: { width: RING_SIZE, height: RING_SIZE, alignItems: 'center', justifyContent: 'center' },
+  centered: { textAlign: 'center' },
+  resultActions: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
 });

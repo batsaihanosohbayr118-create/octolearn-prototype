@@ -25,6 +25,11 @@ export function WeeklyChart({ days }: { days: Day[] }) {
         {selected.isToday ? 'Өнөөдөр' : FULL_DAYS[selected.date.getDay()]}: {selected.xp} XP
       </AppText>
       <View style={styles.plot}>
+        {days.every((day) => day.xp === 0) ? (
+          <AppText variant="caption" pointerEvents="none" style={styles.empty}>
+            Хичээл дуусгаад эхний XP-ээ аваарай
+          </AppText>
+        ) : null}
         {days.map((day, index) => {
           const isSelected = index === selectedIndex;
           return (
@@ -64,6 +69,7 @@ export function WeeklyChart({ days }: { days: Day[] }) {
 const styles = StyleSheet.create({
   readout: { marginTop: 2, marginBottom: spacing.md },
   plot: { flexDirection: 'row' },
+  empty: { position: 'absolute', top: 40, left: 0, right: 0, textAlign: 'center' },
   column: { flex: 1, alignItems: 'center', minHeight: 44 },
   barArea: {
     alignSelf: 'stretch',

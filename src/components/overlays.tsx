@@ -1,14 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Modal, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Animated, Easing, Modal, StyleSheet, useWindowDimensions, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import { useAnimatedValue } from '@/lib/useAnimatedValue';
 import { colors, radius, spacing, useNativeDriver } from '@/theme';
 
+import { GameIcon } from './GameIcon';
 import { AppText, GameButton, type IconName } from './ui';
 
 const CONFETTI_COLORS = [colors.primary, colors.gold, colors.success, colors.danger, colors.primarySoft];
 const CONFETTI_COUNT = 28;
+const SUNBURST_SIZE = 460;
+const SUNBURST_RAYS = 12;
 
 function createConfettiPieces(width: number) {
   return Array.from({ length: CONFETTI_COUNT }, (_, index) => ({
@@ -36,7 +40,7 @@ export function Confetti() {
   }, [pieces]);
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.confettiArea]}>
       {pieces.map(({ left, color, progress, spin }, index) => (
         <Animated.View
           key={index}
@@ -66,47 +70,133 @@ export function PopIn({ children }: { children: React.ReactNode }) {
   return <Animated.View style={{ transform: [{ scale }] }}>{children}</Animated.View>;
 }
 
+/** Slowly turning rays behind the medal. */
+export function Sunburst() {
+  const spin = useAnimatedValue(0);
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(spin, { toValue: 1, duration: 24000, easing: Easing.linear, useNativeDriver }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [spin]);
+
+  const center = SUNBURST_SIZE / 2;
+  const rays = Array.from({ length: SUNBURST_RAYS }, (_, index) => {
+    const angle = (index / SUNBURST_RAYS) * 2 * Math.PI;
+    const spread = Math.PI / SUNBURST_RAYS / 2;
+    const point = (a: number) => `${center + center * Math.cos(a)} ${center + center * Math.sin(a)}`;
+    return `M ${center} ${center} L ${point(angle - spread)} L ${point(angle + spread)} Z`;
+  });
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        styles.sunburst,
+        { transform: [{ rotate: spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }] },
+      ]}
+    >
+      <Svg width={SUNBURST_SIZE} height={SUNBURST_SIZE}>
+        {rays.map((ray) => (
+          <Path key={ray} d={ray} fill={colors.gold} opacity={0.22} />
+        ))}
+      </Svg>
+    </Animated.View>
+  );
+}
+
+export function RewardTile({ icon, value, label, background, testID }: {
+  icon: 'bolt' | 'flame';
+  value: string;
+  label: string;
+  background: string;
+  testID: string;
+}) {
+  return (
+    <View style={[styles.rewardTile, { backgroundColor: background }]}>
+      <PopIn>
+        <GameIcon name={icon} size={36} />
+      </PopIn>
+      <View style={styles.rewardText}>
+        <AppText testID={testID} variant="heading" numberOfLines={1}>
+          {value}
+        </AppText>
+        <AppText variant="caption" numberOfLines={1}>
+          {label}
+        </AppText>
+      </View>
+    </View>
+  );
+}
+
 export function LessonCompleteModal({
   visible,
   xpEarned,
+  streak,
   levelUpTo,
-  message,
+  nextTitle,
   onContinue,
 }: {
   visible: boolean;
   xpEarned: number;
+  streak: number;
   levelUpTo: number | null;
-  message: string;
+  /** The stop this lesson just unlocked. */
+  nextTitle: string | null;
   onContinue: () => void;
 }) {
   return (
     <Modal transparent statusBarTranslucent visible={visible} animationType="fade" onRequestClose={onContinue}>
       <View style={styles.scrim}>
         {visible ? <Confetti /> : null}
-        <View style={styles.card}>
-          <PopIn>
-            <View style={styles.successBadge}>
-              <Ionicons name="checkmark" size={44} color={colors.onColor} />
+        <View style={styles.rewardCard}>
+          <View style={styles.rewardHero}>
+            <Sunburst />
+            <PopIn>
+              <GameIcon name="medal" size={124} />
+            </PopIn>
+          </View>
+
+          <View style={styles.rewardBody}>
+            <AppText variant="title" style={styles.centered}>
+              Хичээл дууслаа!
+            </AppText>
+            {nextTitle ? (
+              <AppText color={colors.inkMuted} style={styles.centered}>
+                Дараагийн алхам: {nextTitle}
+              </AppText>
+            ) : null}
+
+            <View style={styles.rewardRow}>
+              <RewardTile
+                testID="xp-earned"
+                icon="bolt"
+                value={`+${xpEarned} XP`}
+                label="Оноо"
+                background={colors.goldTint}
+              />
+              <RewardTile
+                testID="reward-streak"
+                icon="flame"
+                value={`${streak} өдөр`}
+                label="Цуваа"
+                background={colors.flameTint}
+              />
             </View>
-          </PopIn>
-          <AppText variant="title" style={styles.centered}>
-            Сайн байна!
-          </AppText>
-          <PopIn>
-            <AppText testID="xp-earned" variant="display" color={colors.goldDark}>
-              +{xpEarned} XP
-            </AppText>
-          </PopIn>
-          {levelUpTo ? (
-            <AppText variant="heading" color={colors.primaryDark} style={styles.centered}>
-              Түвшин {levelUpTo}-д хүрлээ!
-            </AppText>
-          ) : null}
-          <AppText color={colors.inkMuted} style={styles.centered}>
-            {message}
-          </AppText>
-          <View style={styles.actions}>
-            <GameButton testID="continue-button" label="Үргэлжлүүлэх" onPress={onContinue} />
+
+            {levelUpTo ? (
+              <View style={styles.levelUp}>
+                <GameIcon name="trophy" size={28} />
+                <AppText variant="heading" color={colors.primaryDark}>
+                  Түвшин {levelUpTo}-д хүрлээ!
+                </AppText>
+              </View>
+            ) : null}
+
+            <View style={styles.actions}>
+              <GameButton testID="continue-button" label="Үргэлжлүүлэх" onPress={onContinue} />
+            </View>
           </View>
         </View>
       </View>
@@ -219,14 +309,42 @@ const styles = StyleSheet.create({
   },
   centered: { textAlign: 'center' },
   actions: { alignSelf: 'stretch', gap: spacing.sm, marginTop: spacing.sm },
-  successBadge: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    backgroundColor: colors.success,
+  rewardCard: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+  },
+  rewardHero: {
+    height: 172,
+    backgroundColor: colors.goldTint,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
+  sunburst: { position: 'absolute', width: SUNBURST_SIZE, height: SUNBURST_SIZE },
+  rewardBody: { padding: spacing.xl, gap: spacing.md },
+  rewardRow: { flexDirection: 'row', gap: spacing.sm },
+  rewardTile: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
+  },
+  rewardText: { flex: 1 },
+  levelUp: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.primaryTint,
+  },
+  confettiArea: { overflow: 'hidden' },
   confetti: { position: 'absolute', top: 0, width: 10, height: 16, borderRadius: 3 },
   toast: {
     position: 'absolute',

@@ -38,7 +38,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#F6F4FF"
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "scheme": "octolearn",
     "extra": {

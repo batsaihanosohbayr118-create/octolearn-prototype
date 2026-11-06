@@ -1,9 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useRef, useState, type ComponentRef } from 'react';
+import { useCallback, useMemo, useRef, useState, type ComponentRef, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { GameIcon } from '@/components/GameIcon';
+import { OctoMark } from '@/components/OctoMark';
 import { useToast } from '@/components/overlays';
 import { PathMap } from '@/components/PathMap';
 import { AppText, Column, ProgressBar } from '@/components/ui';
@@ -14,22 +15,28 @@ import type { PathItem } from '@/domain/types';
 import { useProgress } from '@/store/progressStore';
 import { colors, radius, spacing } from '@/theme';
 
+const [subject, level] = courseData.course.title.split(' — ');
+
+/** Lets the screen transition finish, so that the learner sees the bar grow. */
+const PROGRESS_ANIMATION_DELAY_MS = 350;
+
 function lockedMessage(item: PathItem): string {
   if (item.unit.comingSoon) return 'Энэ бүлэг тун удахгүй нээгдэнэ';
   if (item.kind === 'quiz') return 'Бүлгийн 5 хичээлийг дуусгасны дараа шалгалт нээгдэнэ';
   return 'Өмнөх хичээлээ эхлээд дуусгана уу';
 }
 
-function StatPill({ icon, iconColor, value, label }: {
-  icon: 'flash' | 'flame';
-  iconColor: string;
+function StatPill({ icon, testID, background, value, label }: {
+  icon: ReactNode;
+  testID: string;
+  background: string;
   value: string;
   label: string;
 }) {
   return (
-    <View accessibilityLabel={label} style={styles.pill}>
-      <Ionicons name={icon} size={18} color={iconColor} />
-      <AppText variant="heading" testID={`pill-${icon}`}>
+    <View accessibilityLabel={label} style={[styles.pill, { backgroundColor: background }]}>
+      {icon}
+      <AppText variant="heading" testID={testID}>
         {value}
       </AppText>
     </View>
@@ -64,6 +71,15 @@ export default function HomeScreen() {
     }, [activeY, viewportHeight]),
   );
 
+  // Progress changes while a lesson covers this screen, so the bar catches up once it is back in view.
+  const [barPercent, setBarPercent] = useState(stats.percent);
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setTimeout(() => setBarPercent(stats.percent), PROGRESS_ANIMATION_DELAY_MS);
+      return () => clearTimeout(timer);
+    }, [stats.percent]),
+  );
+
   const openItem = (item: PathItem) => {
     if (statuses[item.id] === 'locked') {
       show(lockedMessage(item), 'lock-closed');
@@ -77,21 +93,41 @@ export default function HomeScreen() {
       <View style={[styles.topBar, { paddingTop: insets.top + spacing.sm }]}>
         <View style={styles.topBarInner}>
           <View style={styles.topRow}>
-            <AppText numberOfLines={2} variant="heading" style={styles.courseTitle}>
-              {courseData.course.title}
-            </AppText>
-            <StatPill icon="flame" iconColor={colors.flame} value={String(streak)} label={`${streak} өдрийн цуваа`} />
-            <StatPill icon="flash" iconColor={colors.goldDark} value={String(totalXp)} label={`Нийт ${totalXp} XP`} />
+            <OctoMark />
+            <View style={styles.courseTitle}>
+              <AppText numberOfLines={1} variant="heading">
+                {subject}
+              </AppText>
+              {level ? (
+                <AppText numberOfLines={1} variant="caption">
+                  {level}
+                </AppText>
+              ) : null}
+            </View>
+            <StatPill
+              testID="pill-flame"
+              icon={<GameIcon name="flame" size={22} />}
+              background={colors.flameTint}
+              value={String(streak)}
+              label={`${streak} өдрийн цуваа`}
+            />
+            <StatPill
+              testID="pill-flash"
+              icon={<GameIcon name="bolt" size={22} />}
+              background={colors.goldTint}
+              value={String(totalXp)}
+              label={`Нийт ${totalXp} XP`}
+            />
           </View>
-          <View style={styles.barRow}>
-            <ProgressBar testID="course-progress" value={stats.percent / 100} />
-            <AppText testID="course-percent" variant="heading" style={styles.percent}>
+          <View style={styles.summaryRow}>
+            <AppText testID="course-summary" variant="caption">
+              {stats.lessonsDone} / {stats.lessonsTotal} хичээл · {stats.quizzesPassed} / {stats.quizzesTotal} шалгалт
+            </AppText>
+            <AppText testID="course-percent" variant="caption" color={colors.primaryDark}>
               {stats.percent}%
             </AppText>
           </View>
-          <AppText testID="course-summary" variant="caption">
-            {stats.lessonsDone} / {stats.lessonsTotal} хичээл · {stats.quizzesPassed} / {stats.quizzesTotal} шалгалт
-          </AppText>
+          <ProgressBar testID="course-progress" value={barPercent / 100} height={10} />
         </View>
       </View>
 
@@ -134,9 +170,9 @@ const styles = StyleSheet.create({
     maxWidth: 520,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.md,
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 36 },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 40 },
   courseTitle: { flex: 1 },
   pill: {
     flexDirection: 'row',
@@ -145,10 +181,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: radius.pill,
-    backgroundColor: colors.background,
   },
-  barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  percent: { minWidth: 46, textAlign: 'right' },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   body: { flex: 1 },
   empty: { textAlign: 'center', marginTop: spacing.xxl },
 });

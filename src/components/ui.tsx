@@ -105,14 +105,50 @@ export function IconButton({
   );
 }
 
+export function IconBadge({ icon, color, background, size = 40 }: {
+  icon: IconName;
+  color: string;
+  background: string;
+  size?: number;
+}) {
+  return (
+    <View
+      style={[
+        styles.iconBadge,
+        { width: size, height: size, borderRadius: size * 0.32, backgroundColor: background },
+      ]}
+    >
+      <Ionicons name={icon} size={size * 0.55} color={color} />
+    </View>
+  );
+}
+
+export function InfoChip({ icon, iconColor, background, label }: {
+  icon: IconName;
+  iconColor: string;
+  background: string;
+  label: string;
+}) {
+  return (
+    <View style={[styles.infoChip, { backgroundColor: background }]}>
+      <Ionicons name={icon} size={15} color={iconColor} />
+      <AppText variant="caption" color={colors.ink}>
+        {label}
+      </AppText>
+    </View>
+  );
+}
+
 export function ProgressBar({
   value,
   color = colors.primary,
+  trackColor = colors.track,
   height = 12,
   testID,
 }: {
   value: number;
   color?: string;
+  trackColor?: string;
   height?: number;
   testID?: string;
 }) {
@@ -131,7 +167,7 @@ export function ProgressBar({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(clamped * 100)}
-      style={[styles.barTrack, { height, borderRadius: height / 2 }]}
+      style={[styles.barTrack, { height, borderRadius: height / 2, backgroundColor: trackColor }]}
     >
       <Animated.View
         style={{
@@ -170,5 +206,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconButtonPressed: { backgroundColor: colors.primaryTint },
-  barTrack: { backgroundColor: colors.track, overflow: 'hidden', flexGrow: 1 },
+  // Full width that shrinks beside siblings in a row. flexGrow would also stretch its height in a column.
+  barTrack: { overflow: 'hidden', width: '100%', flexShrink: 1 },
+  iconBadge: { alignItems: 'center', justifyContent: 'center' },
+  infoChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+  },
 });

@@ -6,7 +6,7 @@ export const colors = {
   ink: '#1E1A3C',
   inkMuted: '#615C80',
   border: '#E4E0F3',
-  track: '#DDD8EE',
+  track: '#E4E0F3',
 
   primary: '#6A4BF5',
   primaryDark: '#4A2FC9',
@@ -25,11 +25,11 @@ export const colors = {
   goldDark: '#C27F00',
   goldTint: '#FFF3D6',
 
-  locked: '#D9D5E8',
-  lockedDark: '#BEB9D2',
-  lockedInk: '#77728F',
+  locked: '#E8E5F3',
+  lockedDark: '#D3CFE3',
+  lockedInk: '#6F6A88',
 
-  flame: '#E8590C',
+  flameTint: '#FFEDE3',
   onColor: '#FFFFFF',
   scrim: 'rgba(30, 26, 60, 0.55)',
 } as const;
@@ -43,6 +43,9 @@ export const fonts = {
 
 export const radius = { sm: 10, md: 16, lg: 22, pill: 999 } as const;
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
+
+/** Soft lift for cards, tinted with the brand colour rather than grey. */
+export const cardShadow = { boxShadow: '0 6px 18px rgba(74, 47, 201, 0.08)' } as const;
 
 /** Column width on tablets and the web, where a phone layout would otherwise stretch. */
 export const MAX_CONTENT_WIDTH = 520;

@@ -22,6 +22,11 @@ export function flattenCourse(data: CourseData): PathItem[] {
 
 export const pathItems = flattenCourse(courseData);
 
+/** The stop after this one on the pathway. */
+export function findNextPathItem(id: string): PathItem | undefined {
+  return pathItems[pathItems.findIndex((item) => item.id === id) + 1];
+}
+
 export function findPathItem(id: string | undefined): PathItem | undefined {
   return pathItems.find((item) => item.id === id);
 }

@@ -3,12 +3,14 @@ import { Nunito_700Bold } from '@expo-google-fonts/nunito/700Bold';
 import { Nunito_800ExtraBold } from '@expo-google-fonts/nunito/800ExtraBold';
 import { Nunito_900Black } from '@expo-google-fonts/nunito/900Black';
 import { Ionicons } from '@expo/vector-icons';
+import { useAssets } from 'expo-asset';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { GAME_ICON_ASSETS } from '@/components/GameIcon';
 import { lockOrientation } from '@/lib/orientation';
 import { useProgressStore } from '@/store/progressStore';
 import { colors } from '@/theme';
@@ -23,9 +25,11 @@ export default function RootLayout() {
     Nunito_900Black,
     ...Ionicons.font,
   });
+  const [iconAssets, iconError] = useAssets(GAME_ICON_ASSETS);
   const hydrated = useProgressStore((state) => state.hydrated);
   // A font failure falls back to the system font, which also covers Mongolian Cyrillic.
-  const ready = (fontsLoaded || fontError !== null) && hydrated;
+  const iconsSettled = iconAssets !== undefined || iconError !== undefined;
+  const ready = (fontsLoaded || fontError !== null) && iconsSettled && hydrated;
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();

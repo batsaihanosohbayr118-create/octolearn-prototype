@@ -7,9 +7,10 @@ import { courseData } from '@/domain/course';
 import { computePathLayout, segmentPath, UNIT_HEADER_HEIGHT, type LayoutNode } from '@/domain/pathLayout';
 import type { ItemStatus, PathItem, Unit } from '@/domain/types';
 import { useAnimatedValue } from '@/lib/useAnimatedValue';
-import { colors, fonts, radius, spacing, useNativeDriver } from '@/theme';
+import { cardShadow, colors, fonts, radius, spacing, useNativeDriver } from '@/theme';
 
-import { AppText, type IconName } from './ui';
+import { GameIcon } from './GameIcon';
+import { AppText, IconBadge, ProgressBar, type IconName } from './ui';
 
 const LESSON_SIZE = 72;
 const QUIZ_SIZE = 64; // Rotated 45°, so its diagonal is about 90.
@@ -23,7 +24,8 @@ const lessonPalette: Record<ItemStatus, { face: string; lip: string; icon: IconN
 };
 
 const quizPalette: Record<ItemStatus, { face: string; lip: string; icon: IconName }> = {
-  completed: { face: colors.gold, lip: colors.goldDark, icon: 'trophy' },
+  // Light, so that the golden trophy art stands out.
+  completed: { face: colors.goldTint, lip: colors.gold, icon: 'trophy' },
   active: { face: colors.primary, lip: colors.primaryDark, icon: 'star' },
   locked: { face: colors.locked, lip: colors.lockedDark, icon: 'star' },
 };
@@ -104,11 +106,15 @@ function PathNode({ item, status, onPress }: { item: PathItem; status: ItemStatu
               ]}
             />
             <View pointerEvents="none" style={[styles.nodeIcon, { transform: [{ translateY: pressed ? LIP - 2 : 0 }] }]}>
-              <Ionicons
-                name={palette.icon}
-                size={status === 'locked' && !isQuiz ? 26 : 34}
-                color={status === 'locked' ? colors.lockedInk : colors.onColor}
-              />
+              {isQuiz && status === 'completed' ? (
+                <GameIcon name="trophy" size={52} />
+              ) : (
+                <Ionicons
+                  name={palette.icon}
+                  size={status === 'locked' ? 24 : 34}
+                  color={status === 'locked' ? colors.lockedInk : colors.onColor}
+                />
+              )}
             </View>
           </>
         )}
@@ -137,6 +143,7 @@ function ActiveBubble({ title }: { title: string }) {
         { transform: [{ translateY: bob.interpolate({ inputRange: [0, 1], outputRange: [0, 4] }) }] },
       ]}
     >
+      <View style={styles.bubbleTail} />
       <AppText numberOfLines={1} variant="caption" color={colors.onColor} style={styles.bubbleText}>
         {title}
       </AppText>
@@ -150,8 +157,9 @@ function UnitHeader({ unit, statuses, top }: { unit: Unit; statuses: Record<stri
   const isOpen = ids.some((id) => statuses[id] !== 'locked');
   const isDone = done === ids.length;
 
-  const background = !isOpen ? colors.locked : isDone ? colors.success : colors.primary;
+  const background = !isOpen ? colors.surface : isDone ? colors.success : colors.primary;
   const foreground = isOpen ? colors.onColor : colors.ink;
+  const subtleForeground = isOpen ? colors.onColor : colors.inkMuted;
   const subtitle = unit.comingSoon
     ? 'Тун удахгүй нээгдэнэ'
     : isDone
@@ -159,19 +167,31 @@ function UnitHeader({ unit, statuses, top }: { unit: Unit; statuses: Record<stri
       : `${done} / ${ids.length} алхам дууссан`;
 
   return (
-    <View testID={`unit-${unit.id}`} style={[styles.unitHeader, { top, backgroundColor: background }]}>
+    <View
+      testID={`unit-${unit.id}`}
+      style={[styles.unitHeader, { top, backgroundColor: background }, isOpen ? null : styles.unitHeaderLocked]}
+    >
       <View style={styles.unitText}>
         <AppText numberOfLines={1} variant="heading" color={foreground}>
           {unit.title}
         </AppText>
-        <AppText numberOfLines={1} variant="caption" color={foreground}>
+        <AppText numberOfLines={1} variant="caption" color={subtleForeground}>
           {subtitle}
         </AppText>
+        {isOpen && !isDone ? (
+          <ProgressBar
+            value={done / ids.length}
+            height={6}
+            color={colors.onColor}
+            trackColor="rgba(255, 255, 255, 0.3)"
+          />
+        ) : null}
       </View>
-      <Ionicons
-        name={!isOpen ? 'lock-closed' : isDone ? 'checkmark-circle' : 'book'}
-        size={28}
-        color={foreground}
+      <IconBadge
+        icon={!isOpen ? 'lock-closed' : isDone ? 'checkmark' : 'book'}
+        color={isOpen ? colors.onColor : colors.lockedInk}
+        background={isOpen ? 'rgba(255, 255, 255, 0.2)' : colors.locked}
+        size={44}
       />
     </View>
   );
@@ -210,16 +230,21 @@ export function PathMap({ layout, width, statuses, onPressItem }: PathMapProps) 
   return (
     <View style={{ width, height: layout.height }}>
       <Svg width={width} height={layout.height} style={StyleSheet.absoluteFill}>
-        {layout.nodes.slice(0, -1).map((node, index) => (
-          <Path
-            key={node.item.id}
-            d={segmentPath(node, layout.nodes[index + 1])}
-            stroke={statuses[node.item.id] === 'completed' ? colors.primarySoft : colors.track}
-            strokeWidth={10}
-            strokeLinecap="round"
-            fill="none"
-          />
-        ))}
+        {layout.nodes.slice(0, -1).map((node, index) => {
+          const nextNode = layout.nodes[index + 1];
+          const isCompleted = statuses[node.item.id] === 'completed';
+
+          return (
+            <Path
+              key={node.item.id}
+              d={segmentPath(node, nextNode)}
+              stroke={isCompleted ? colors.primarySoft : colors.lockedDark}
+              strokeWidth={isCompleted ? 10 : 7}
+              strokeLinecap="round"
+              fill="none"
+            />
+          );
+        })}
       </Svg>
 
       {layout.headers.map((header) => {
@@ -263,6 +288,16 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm + 2,
     paddingVertical: 3,
+    alignItems: 'center',
+  },
+  bubbleTail: {
+    position: 'absolute',
+    top: -4,
+    width: 10,
+    height: 10,
+    borderRadius: 2,
+    backgroundColor: colors.primaryDark,
+    transform: [{ rotate: '45deg' }],
   },
   bubbleText: { fontFamily: fonts.heavy, textAlign: 'center' },
   unitHeader: {
@@ -275,6 +310,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    ...cardShadow,
   },
-  unitText: { flex: 1, gap: 2 },
+  unitHeaderLocked: { borderWidth: 1, borderColor: colors.border },
+  unitText: { flex: 1, gap: 4 },
 });
