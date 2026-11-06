@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { lockOrientation } from '@/lib/orientation';
 import { useProgressStore } from '@/store/progressStore';
 import { colors } from '@/theme';
 
@@ -29,6 +30,10 @@ export default function RootLayout() {
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
+
+  useEffect(() => {
+    lockOrientation('portrait');
+  }, []);
 
   if (!ready) return null;
 

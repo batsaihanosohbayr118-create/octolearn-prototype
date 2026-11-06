@@ -1,13 +1,29 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-iframe';
 
-import { YOUTUBE_POLL_MS, type YouTubeFrameProps } from './YouTubeFrame.types';
+import { YOUTUBE_POLL_MS, type YouTubeFrameProps, type YouTubeState } from './YouTubeFrame.types';
 
-export function YouTubeFrame({ videoId, width, height, paused, onReady, onError, onProgress }: YouTubeFrameProps) {
+const STATES: Record<string, YouTubeState> = {
+  playing: 'playing',
+  paused: 'paused',
+  buffering: 'buffering',
+  ended: 'ended',
+};
+
+export function YouTubeFrame({ ref, videoId, width, height, onReady, onError, onStateChange, onTime }: YouTubeFrameProps) {
   const playerRef = useRef<YoutubeIframeRef>(null);
   const [isReady, setIsReady] = useState(false);
-  // The player's `play` prop only acts when it changes, so it has to follow what the user tapped.
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [play, setPlay] = useState(false);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      play: () => setPlay(true),
+      pause: () => setPlay(false),
+      seekTo: (seconds) => playerRef.current?.seekTo(seconds, true),
+    }),
+    [],
+  );
 
   useEffect(() => {
     if (!isReady) return;
@@ -15,10 +31,10 @@ export function YouTubeFrame({ videoId, width, height, paused, onReady, onError,
       const player = playerRef.current;
       if (!player) return;
       const [currentTime, duration] = await Promise.all([player.getCurrentTime(), player.getDuration()]);
-      if (duration > 0) onProgress(currentTime / duration);
+      if (duration > 0) onTime(currentTime, duration);
     }, YOUTUBE_POLL_MS);
     return () => clearInterval(timer);
-  }, [isReady, onProgress]);
+  }, [isReady, onTime]);
 
   return (
     <YoutubePlayer
@@ -26,20 +42,20 @@ export function YouTubeFrame({ videoId, width, height, paused, onReady, onError,
       videoId={videoId}
       width={width}
       height={height}
-      play={isPlaying && !paused}
-      initialPlayerParams={{ rel: false, preventFullScreen: false }}
+      play={play}
+      initialPlayerParams={{ controls: false, rel: false, preventFullScreen: true, iv_load_policy: 3 }}
       onReady={() => {
         setIsReady(true);
         onReady();
       }}
       onError={onError}
-      onChangeState={(state: string) => {
-        if (state === 'playing') setIsPlaying(true);
-        if (state === 'paused') setIsPlaying(false);
-        if (state === 'ended') {
-          setIsPlaying(false);
-          onProgress(1);
-        }
+      onChangeState={(event: string) => {
+        const state = STATES[event];
+        if (!state) return;
+        // The `play` prop only acts when it changes, so it has to follow the player's real state.
+        if (state === 'playing') setPlay(true);
+        if (state === 'paused' || state === 'ended') setPlay(false);
+        onStateChange(state);
       }}
     />
   );

@@ -16,7 +16,7 @@ import {
   sanitizeProgress,
 } from '../progress';
 import type { CourseData, ProgressState, Quiz } from '../types';
-import { getYouTubeId } from '../video';
+import { formatTime, getYouTubeId } from '../video';
 
 const items = flattenCourse(courseData);
 const NOW = new Date(2026, 10, 6, 12);
@@ -238,6 +238,18 @@ describe('getYouTubeId', () => {
     for (const unit of courseData.units.filter(({ comingSoon }) => !comingSoon)) {
       for (const lesson of unit.lessons) expect(getYouTubeId(lesson.videoUrl)).not.toBeNull();
     }
+  });
+});
+
+describe('formatTime', () => {
+  it('shows minutes and padded seconds', () => {
+    expect(formatTime(0)).toBe('0:00');
+    expect(formatTime(75.9)).toBe('1:15');
+    expect(formatTime(261)).toBe('4:21');
+  });
+
+  it('never shows a negative time', () => {
+    expect(formatTime(-3)).toBe('0:00');
   });
 });
 

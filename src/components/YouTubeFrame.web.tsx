@@ -1,13 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useImperativeHandle, useRef } from 'react';
 
-import { YOUTUBE_POLL_MS, type YouTubeFrameProps } from './YouTubeFrame.types';
+import { YOUTUBE_POLL_MS, type YouTubeFrameProps, type YouTubeState } from './YouTubeFrame.types';
 
 const IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
-const STATE_ENDED = 0;
+/** YouTube's numeric player states. */
+const STATES: Record<number, YouTubeState> = { 0: 'ended', 1: 'playing', 2: 'paused', 3: 'buffering' };
 
 type WebPlayer = {
   destroy: () => void;
+  playVideo: () => void;
   pauseVideo: () => void;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
 };
@@ -53,9 +56,19 @@ function loadYouTubeApi(): Promise<YouTubeApi> {
   return apiPromise;
 }
 
-export function YouTubeFrame({ videoId, width, height, paused, onReady, onError, onProgress }: YouTubeFrameProps) {
+export function YouTubeFrame({ ref, videoId, width, height, onReady, onError, onStateChange, onTime }: YouTubeFrameProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<WebPlayer | null>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      play: () => playerRef.current?.playVideo(),
+      pause: () => playerRef.current?.pauseVideo(),
+      seekTo: (seconds) => playerRef.current?.seekTo(seconds, true),
+    }),
+    [],
+  );
 
   useEffect(() => {
     const host = hostRef.current;
@@ -75,19 +88,20 @@ export function YouTubeFrame({ videoId, width, height, paused, onReady, onError,
           videoId,
           width: '100%',
           height: '100%',
-          playerVars: { rel: 0, playsinline: 1 },
+          playerVars: { controls: 0, fs: 0, rel: 0, iv_load_policy: 3, disablekb: 1, playsinline: 1 },
           events: {
             onReady: () => {
               playerRef.current = player;
               onReady();
               timer = setInterval(() => {
                 const duration = player?.getDuration() ?? 0;
-                if (duration > 0) onProgress((player?.getCurrentTime() ?? 0) / duration);
+                if (duration > 0) onTime(player?.getCurrentTime() ?? 0, duration);
               }, YOUTUBE_POLL_MS);
             },
             onError,
             onStateChange: ({ data }) => {
-              if (data === STATE_ENDED) onProgress(1);
+              const state = STATES[data];
+              if (state) onStateChange(state);
             },
           },
         });
@@ -103,11 +117,7 @@ export function YouTubeFrame({ videoId, width, height, paused, onReady, onError,
       player?.destroy();
       host.replaceChildren();
     };
-  }, [videoId, onReady, onError, onProgress]);
-
-  useEffect(() => {
-    if (paused) playerRef.current?.pauseVideo();
-  }, [paused]);
+  }, [videoId, onReady, onError, onStateChange, onTime]);
 
   return <div ref={hostRef} style={{ width, height }} />;
 }

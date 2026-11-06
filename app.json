@@ -3,12 +3,13 @@
     "name": "OctoLearn",
     "slug": "octolearn-prototype",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.octolearn.prototype"
+      "bundleIdentifier": "com.octolearn.prototype",
+      "requireFullScreen": true
     },
     "android": {
       "adaptiveIcon": {

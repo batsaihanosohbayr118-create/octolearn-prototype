@@ -23,10 +23,10 @@ export function AppText({ variant = 'body', color, style, ...props }: AppTextPro
 }
 
 /** Centres a phone-width column on tablets and the web. */
-export function Column({ children }: { children: ReactNode }) {
+export function Column({ children, fullWidth }: { children: ReactNode; fullWidth?: boolean }) {
   return (
     <View style={styles.columnOuter}>
-      <View style={styles.columnInner}>{children}</View>
+      <View style={[styles.columnInner, fullWidth ? styles.columnFullWidth : null]}>{children}</View>
     </View>
   );
 }
@@ -148,6 +148,7 @@ export function ProgressBar({
 const styles = StyleSheet.create({
   columnOuter: { flex: 1, alignItems: 'center' },
   columnInner: { flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH },
+  columnFullWidth: { maxWidth: '100%' },
   buttonLip: { borderRadius: radius.md, marginTop: 4 },
   buttonFace: {
     minHeight: 52,
