@@ -1,0 +1,62 @@
+{
+  "course": { "id": "eng-a1", "title": "Англи хэл — Анхан шат" },
+  "units": [
+    {
+      "id": "u1",
+      "title": "Бүлэг 1: Танилцах",
+      "lessons": [
+        { "id": "u1-l1", "title": "Мэндчилгээ", "description": "Hello, Hi, Good morning — өдөр тутмын мэндчилгээг сурна.", "videoUrl": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4", "durationSec": 10 },
+        { "id": "u1-l2", "title": "Өөрийгөө танилцуулах", "description": "My name is... гэж нэрээ хэлж, бусдаас нэрийг нь асууна.", "videoUrl": "https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4", "durationSec": 10 },
+        { "id": "u1-l3", "title": "Цагаан толгой", "description": "A-аас Z хүртэлх үсгийн дуудлагыг давтана.", "videoUrl": "https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4", "durationSec": 10 },
+        { "id": "u1-l4", "title": "Тоо 1–10", "description": "One, two, three... нэгээс арав хүртэл тоолж сурна.", "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", "durationSec": 5 },
+        { "id": "u1-l5", "title": "Өнгөнүүд", "description": "Red, blue, green — үндсэн өнгөний нэрсийг сурна.", "videoUrl": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4", "durationSec": 10 }
+      ],
+      "quiz": {
+        "id": "u1-quiz",
+        "passPercent": 60,
+        "questions": [
+          { "id": "u1-q1", "text": "\"Hello\" гэдэг ямар утгатай вэ?", "options": ["Баяртай", "Сайн байна уу", "Баярлалаа"], "answerIndex": 1 },
+          { "id": "u1-q2", "text": "\"Миний нэр Болд\" гэдгийг англиар хэрхэн хэлэх вэ?", "options": ["My name is Bold", "I am from Bold", "This is my Bold"], "answerIndex": 0 },
+          { "id": "u1-q3", "text": "Англи цагаан толгойн эхний үсэг аль нь вэ?", "options": ["B", "Z", "A"], "answerIndex": 2 },
+          { "id": "u1-q4", "text": "\"Three\" гэдэг ямар тоо вэ?", "options": ["3", "2", "5"], "answerIndex": 0 },
+          { "id": "u1-q5", "text": "\"Цэнхэр\" өнгийг англиар юу гэх вэ?", "options": ["Red", "Blue", "Green"], "answerIndex": 1 }
+        ]
+      }
+    },
+    {
+      "id": "u2",
+      "title": "Бүлэг 2: Өдөр тутам",
+      "lessons": [
+        { "id": "u2-l1", "title": "Гэр бүл", "description": "Mother, father, sister — гэр бүлийн гишүүдийн нэр.", "videoUrl": "https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4", "durationSec": 10 },
+        { "id": "u2-l2", "title": "Хоол, ундаа", "description": "Bread, water, tea — хоол ундааны үгсийг сурна.", "videoUrl": "https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4", "durationSec": 10 },
+        { "id": "u2-l3", "title": "Цаг хэлэх", "description": "What time is it? — цаг асууж, хариулж сурна.", "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", "durationSec": 5 },
+        { "id": "u2-l4", "title": "Өдрийн хуваарь", "description": "I wake up at seven — өдрийн хуваариа ярьж сурна.", "videoUrl": "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4", "durationSec": 10 },
+        { "id": "u2-l5", "title": "Дэлгүүрт", "description": "How much is it? — дэлгүүрт үнэ асууж сурна.", "videoUrl": "https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4", "durationSec": 10 }
+      ],
+      "quiz": {
+        "id": "u2-quiz",
+        "passPercent": 60,
+        "questions": [
+          { "id": "u2-q1", "text": "\"Mother\" гэдэг хэн бэ?", "options": ["Аав", "Ах", "Ээж"], "answerIndex": 2 },
+          { "id": "u2-q2", "text": "\"Ус\" гэдгийг англиар юу гэх вэ?", "options": ["Water", "Bread", "Tea"], "answerIndex": 0 },
+          { "id": "u2-q3", "text": "\"What time is it?\" гэдэг ямар асуулт вэ?", "options": ["Чи хэн бэ?", "Хэдэн цаг болж байна?", "Энэ хэд вэ?"], "answerIndex": 1 },
+          { "id": "u2-q4", "text": "\"How much is it?\" гэж хаана хамгийн их асуух вэ?", "options": ["Дэлгүүрт", "Унтлагын өрөөнд", "Номын санд"], "answerIndex": 0 }
+        ]
+      }
+    },
+    {
+      "id": "u3",
+      "title": "Бүлэг 3: Аялал",
+      "comingSoon": true,
+      "lessons": [
+        { "id": "u3-l1", "title": "Нисэх буудал", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 },
+        { "id": "u3-l2", "title": "Зочид буудал", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 },
+        { "id": "u3-l3", "title": "Зам асуух", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 },
+        { "id": "u3-l4", "title": "Тээвэр", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 },
+        { "id": "u3-l5", "title": "Ресторанд", "description": "Удахгүй нэмэгдэнэ.", "videoUrl": "", "durationSec": 0 }
+      ],
+      "quiz": { "id": "u3-quiz", "passPercent": 60, "questions": [] }
+    }
+  ],
+  "user": { "name": "Болд", "avatarUrl": null }
+}
