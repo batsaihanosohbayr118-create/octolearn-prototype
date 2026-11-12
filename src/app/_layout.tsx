@@ -12,10 +12,11 @@ import { useEffect } from 'react';
 
 import { GAME_ICON_ASSETS } from '@/components/GameIcon';
 import { lockOrientation } from '@/lib/orientation';
-import { useProgressStore } from '@/store/progressStore';
+import { loadDatabase, useProgressStore } from '@/store/progressStore';
 import { colors } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
+void loadDatabase();
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -38,7 +39,6 @@ export default function RootLayout() {
   useEffect(() => {
     lockOrientation('portrait');
   }, []);
-
   if (!ready) return null;
 
   return (

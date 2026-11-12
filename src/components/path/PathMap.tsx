@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { courseData } from '@/domain/course';
+import { useCourse } from '@/store/courseStore';
 import { computePathLayout, segmentPath, UNIT_HEADER_HEIGHT, type LayoutNode } from '@/domain/pathLayout';
 import type { ItemStatus, PathItem, Unit } from '@/domain/types';
 import { useAnimatedValue } from '@/lib/useAnimatedValue';
@@ -272,6 +272,7 @@ type PathMapProps = {
 };
 
 export function PathMap({ layout, width, statuses, onPressItem }: PathMapProps) {
+  const { courseData } = useCourse();
   return (
     <View style={{ width, height: layout.height }}>
       <Svg width={width} height={layout.height} style={StyleSheet.absoluteFill}>

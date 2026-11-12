@@ -1,4 +1,6 @@
-import { courseData, flattenCourse } from '../course';
+import rawCourse from '@/data/course.json';
+
+import { flattenCourse } from '../course';
 import { computePathLayout } from '../pathLayout';
 import {
   completeLesson,
@@ -18,6 +20,7 @@ import {
 import type { CourseData, ProgressState, Quiz } from '../types';
 import { formatTime, getYouTubeId } from '../video';
 
+const courseData = rawCourse as CourseData;
 const items = flattenCourse(courseData);
 const NOW = new Date(2026, 10, 6, 12);
 const unit1 = courseData.units[0];

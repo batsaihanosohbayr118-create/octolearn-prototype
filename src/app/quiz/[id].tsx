@@ -1,14 +1,16 @@
 import { Redirect, useLocalSearchParams } from 'expo-router';
 
-import { findPathItem, pathItems } from '@/domain/course';
+import { findPathItem } from '@/domain/course';
 import { getItemStatuses } from '@/domain/progress';
 import { QuizScreen } from '@/screens/QuizScreen';
+import { useCourse } from '@/store/courseStore';
 import { useProgress } from '@/store/progressStore';
 
 export default function QuizRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const progress = useProgress();
-  const item = findPathItem(id);
+  const { pathItems } = useCourse();
+  const item = findPathItem(pathItems, id);
 
   // Deep links and web URLs must obey the same lock rules as the pathway.
   if (

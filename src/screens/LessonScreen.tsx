@@ -8,6 +8,7 @@ import { LessonCompleteModal } from '@/components/feedback/LessonCompleteModal';
 import { AppText, Column, GameButton, IconBadge, IconButton, InfoChip } from '@/components/ui';
 import { VideoLessonPlayer } from '@/components/video/VideoLessonPlayer';
 import { findNextPathItem } from '@/domain/course';
+import { useCourse } from '@/store/courseStore';
 import { getStreak, isWatchedEnough, WATCHED_THRESHOLD } from '@/domain/progress';
 import type { PathItem } from '@/domain/types';
 import { goBackToPath } from '@/lib/navigation';
@@ -34,7 +35,7 @@ export function LessonScreen({ item }: { item: LessonItem }) {
   // Computed Values
   const alreadyDone = isCompleted && reward === null;
   const canFinish = alreadyDone || isWatchedEnough(watched, 1);
-  const nextItem = findNextPathItem(lesson.id);
+  const nextItem = findNextPathItem(useCourse().pathItems, lesson.id);
 
   const handleProgress = useCallback((ratio: number) => {
     setWatched((best) => Math.max(best, ratio));

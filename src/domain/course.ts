@@ -1,8 +1,4 @@
-import rawCourse from '@/data/course.json';
-
 import type { CourseData, PathItem } from './types';
-
-export const courseData = rawCourse as CourseData;
 
 export function flattenCourse(data: CourseData): PathItem[] {
   return data.units.flatMap((unit, unitIndex): PathItem[] => [
@@ -18,13 +14,12 @@ export function flattenCourse(data: CourseData): PathItem[] {
   ]);
 }
 
-export const pathItems = flattenCourse(courseData);
-
 /** The stop after this one on the pathway. */
-export function findNextPathItem(id: string): PathItem | undefined {
-  return pathItems[pathItems.findIndex((item) => item.id === id) + 1];
+export function findNextPathItem(items: PathItem[], id: string): PathItem | undefined {
+  const index = items.findIndex((item) => item.id === id);
+  return index === -1 ? undefined : items[index + 1];
 }
 
-export function findPathItem(id: string | undefined): PathItem | undefined {
-  return pathItems.find((item) => item.id === id);
+export function findPathItem(items: PathItem[], id: string | undefined): PathItem | undefined {
+  return items.find((item) => item.id === id);
 }

@@ -1,17 +1,18 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 
+import { database } from '@/db/database';
 import {
   completeLesson,
+  dateKey,
   emptyProgress,
   getLevel,
   getTotalXp,
   recordQuizAttempt,
-  sanitizeProgress,
 } from '@/domain/progress';
 import type { ProgressState, Quiz } from '@/domain/types';
+
+import { useCourseStore } from './courseStore';
 
 export type Reward = {
   xpEarned: number;
@@ -20,7 +21,7 @@ export type Reward = {
 };
 
 type ProgressStore = ProgressState & {
-  /** True once saved progress has been read, whether or not that succeeded. */
+  /** True once the database has been read, whether or not that succeeded. */
   hydrated: boolean;
   completeLesson: (lessonId: string) => Reward;
   submitQuiz: (quiz: Quiz, correct: number) => Reward & { passed: boolean };
@@ -37,41 +38,55 @@ function levelUp(before: ProgressState, after: ProgressState): number | null {
   return next > previous ? next : null;
 }
 
-export const useProgressStore = create<ProgressStore>()(
-  persist<ProgressStore, [], [], ProgressState>(
-    (set, get) => ({
-      ...emptyProgress,
-      hydrated: false,
+/**
+ * The UI reads and updates this store straight away; each change is then
+ * written to the database in the background.
+ */
+export const useProgressStore = create<ProgressStore>()((set, get) => ({
+  ...emptyProgress,
+  hydrated: false,
 
-      completeLesson: (lessonId) => {
-        const before = pickProgress(get());
-        const { state, xpEarned } = completeLesson(before, lessonId, new Date());
-        set(state);
-        return { xpEarned, levelUpTo: levelUp(before, state) };
-      },
+  completeLesson: (lessonId) => {
+    const now = new Date();
+    const before = pickProgress(get());
+    const { state, xpEarned } = completeLesson(before, lessonId, now);
+    set(state);
+    if (state !== before) void database.completeLesson(lessonId, dateKey(now), xpEarned);
+    return { xpEarned, levelUpTo: levelUp(before, state) };
+  },
 
-      submitQuiz: (quiz, correct) => {
-        const before = pickProgress(get());
-        const { state, xpEarned, passed } = recordQuizAttempt(before, quiz, correct, new Date());
-        set(state);
-        return { xpEarned, passed, levelUpTo: levelUp(before, state) };
-      },
+  submitQuiz: (quiz, correct) => {
+    const now = new Date();
+    const before = pickProgress(get());
+    const { state, xpEarned, passed } = recordQuizAttempt(before, quiz, correct, now);
+    set(state);
+    void database.saveQuizResult(quiz.id, state.quizResults[quiz.id], dateKey(now), xpEarned);
+    return { xpEarned, passed, levelUpTo: levelUp(before, state) };
+  },
 
-      reset: () => set(emptyProgress),
-    }),
-    {
-      name: 'octolearn-progress',
-      version: 1,
-      storage: createJSONStorage(() => AsyncStorage),
-      partialize: pickProgress,
-      merge: (saved, current) => ({ ...current, ...sanitizeProgress(saved) }),
-      onRehydrateStorage: () => () => {
-        // Runs on failure too, so unreadable storage can't leave the app stuck on the splash screen.
-        useProgressStore.setState({ hydrated: true });
-      },
-    },
-  ),
-);
+  reset: () => {
+    set(emptyProgress);
+    void database.clearProgress();
+  },
+}));
+
+let loading: Promise<void> | null = null;
+
+/** Reads the course and progress from the database into the stores. Safe to call more than once. */
+export function loadDatabase() {
+  loading ??= database
+    .load()
+    .then(({ courseData, progress }) => {
+      useCourseStore.getState().setCourse(courseData);
+      useProgressStore.setState(progress);
+    })
+    .catch((error: unknown) => {
+      // The app still runs on the bundled course; progress just won't persist this session.
+      console.warn('Could not open the database:', error);
+    })
+    .finally(() => useProgressStore.setState({ hydrated: true }));
+  return loading;
+}
 
 export function useProgress(): ProgressState {
   return useProgressStore(useShallow(pickProgress));

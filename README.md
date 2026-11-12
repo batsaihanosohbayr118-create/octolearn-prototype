@@ -42,7 +42,8 @@ npx eas-cli@latest build --platform android --profile preview
 
 - **Expo SDK 58, React Native, TypeScript** (strict)
 - **Expo Router** — файлд суурилсан навигаци, bottom tab
-- **Zustand + AsyncStorage** — төлөв ба төхөөрөмж дээрх хадгалалт
+- **Zustand** — дэлгэцүүдийн төлөв
+- **expo-sqlite** — утсан дээрх database: контент ба ахиц (вэб дээр AsyncStorage)
 - **YouTube** — хичээлийн видео. Native: `react-native-youtube-iframe` (WebView), вэб: YouTube IFrame API
 - **expo-video** — mp4 файлын тоглуулагч. `videoUrl` нь mp4 бол автоматаар үүнийг ашиглана
 - **expo-screen-orientation** — бүтэн дэлгэцэд хэвтээ эргүүлэх
@@ -51,7 +52,7 @@ npx eas-cli@latest build --platform android --profile preview
 - **Jest (jest-expo)** — unit тест
 - **Nunito** фонт — монгол `ө`, `ү` үсгийг агуулж байгааг файлаас нь шалгасан
 
-Backend байхгүй. Контент [src/data/course.json](src/data/course.json) файлаас уншигдана.
+Backend байхгүй. Контент болон ахиц утсан дээрх SQLite database-д хадгалагдана. Анхны нээлтэд [src/data/course.json](src/data/course.json)-оос database руу хуулагдана.
 
 ## Архитектур
 
@@ -65,15 +66,17 @@ src/
     quiz/       Шалгалтын асуулт ба үр дүн
     video/      YouTube ба mp4 тоглуулагч, удирдлага
   domain/       Цэвэр логик: түгжээ, XP, шалгалт, streak, замын байршил
-  store/        Zustand store, хадгалалт
+  store/        Zustand store
+  db/           SQLite database (database.native.ts), вэбийн хувилбар (database.ts)
   lib/          Жижиг туслах кодууд
-  data/         course.json
+  data/         course.json (database-ийн анхны контент)
   theme/        Өнгө, фонт, зайны токенууд
 ```
 
 ### Гол шийдвэрүүд
 
 - **Бизнес логик React-аас тусдаа.** `domain/` нь `(хуучин төлөв, үйлдэл) → шинэ төлөв` хэлбэрийн цэвэр функцүүд тул дэлгэцгүйгээр тестлэгдэнэ. Store нь зөвхөн тэдгээрийг дуудаж хадгална. Backend нэмэхэд `domain/` өөрчлөгдөхгүй.
+- **SQLite database.** Контент `units`, `lessons`, `quizzes`, `questions` хүснэгтэд, ахиц `completed_lessons`, `quiz_results`, `xp_by_day` хүснэгтэд хадгалагдана. Schema-г `PRAGMA user_version`-оор хувилбарлана. Апп шинэчлэгдэж `course.json` өөрчлөгдвөл контентын хүснэгтүүд дахин бөглөгдөнө; ахиц хадгалагдана. Өмнөх хувилбарын AsyncStorage-д байсан ахиц эхний нээлтэд database руу автоматаар шилжинэ. Дэлгэц store-оос шууд уншиж, бичилт ард нь дарааллаар хийгдэнэ. Вэб дээр SQLite-д шаардлагатай COOP/COEP header нь YouTube тоглуулагчийг хаадаг тул вэб нь AsyncStorage хэрэглэнэ.
 - **Статус хадгалагдахгүй, тооцоологдоно.** Цэгийн төлөв (дууссан / идэвхтэй / түгжээтэй) нь дууссан хичээлүүдээс гардаг: дуусаагүй эхний цэг нь идэвхтэй, үлдсэн нь түгжээтэй. Нийт XP болон streak ч `xpByDay`-аас гардаг. Хоёр эх сурвалж зөрөх боломжгүй.
 - **Хадгалсан өгөгдөлд итгэхгүй.** Эвдэрсэн эсвэл хуучин формат аппыг унагаахгүй, зөвхөн зөв хэсгийг нь авна.
 - **Шууд холбоос түгжээг давахгүй.** Вэб URL эсвэл deep link-ээр түгжээтэй хичээл рүү ороход нүүр рүү буцаана.

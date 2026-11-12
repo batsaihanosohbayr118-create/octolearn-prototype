@@ -8,7 +8,7 @@ import { ConfirmDialog } from '@/components/feedback/ConfirmDialog';
 import { useToast } from '@/components/feedback/useToast';
 import { AppText, Column, IconBadge, ProgressBar } from '@/components/ui';
 import { WeeklyChart } from '@/components/WeeklyChart';
-import { courseData } from '@/domain/course';
+import { useCourse } from '@/store/courseStore';
 import { getCourseStats, getLevel, getStreak, getTotalXp, getWeeklyXp } from '@/domain/progress';
 import { useProgress, useProgressStore } from '@/store/progressStore';
 import { cardShadow, colors, MIN_TOUCH_TARGET, radius, spacing } from '@/theme';
@@ -39,8 +39,9 @@ export default function ProfileScreen() {
   const { show, toast } = useToast();
   const [confirmingReset, setConfirmingReset] = useState(false);
 
+  const { courseData } = useCourse();
   const { name, avatarUrl } = courseData.user;
-  const stats = useMemo(() => getCourseStats(courseData, progress), [progress]);
+  const stats = useMemo(() => getCourseStats(courseData, progress), [courseData, progress]);
   const totalXp = getTotalXp(progress);
   const { level, xpIntoLevel, xpPerLevel } = getLevel(totalXp);
   const now = new Date();

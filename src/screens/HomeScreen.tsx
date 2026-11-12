@@ -8,14 +8,13 @@ import { OctoMark } from '@/components/OctoMark';
 import { useToast } from '@/components/feedback/useToast';
 import { PathMap } from '@/components/path/PathMap';
 import { AppText, Column, ProgressBar } from '@/components/ui';
-import { courseData, pathItems } from '@/domain/course';
+import { useCourse } from '@/store/courseStore';
 import { computePathLayout } from '@/domain/pathLayout';
 import { getCourseStats, getItemStatuses, getStreak, getTotalXp } from '@/domain/progress';
 import type { PathItem } from '@/domain/types';
 import { useProgress } from '@/store/progressStore';
 import { colors, radius, spacing } from '@/theme';
 
-const [subject, level] = courseData.course.title.split(' — ');
 const PROGRESS_ANIMATION_DELAY_MS = 350; // Дэлгэц шилжих үед явц өсөхийг харуулах хугацаа
 
 function lockedMessage(item: PathItem): string {
@@ -46,18 +45,23 @@ function StatPill({ icon, testID, background, value, label }: StatPillProps) {
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const progress = useProgress();
+  const { courseData, pathItems } = useCourse();
+  const [subject, level] = courseData.course.title.split(' — ');
   const { show, toast } = useToast();
 
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const [mapWidth, setMapWidth] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(0);
 
-  const statuses = useMemo(() => getItemStatuses(pathItems, progress), [progress]);
-  const stats = useMemo(() => getCourseStats(courseData, progress), [progress]);
+  const statuses = useMemo(() => getItemStatuses(pathItems, progress), [pathItems, progress]);
+  const stats = useMemo(() => getCourseStats(courseData, progress), [courseData, progress]);
   const totalXp = getTotalXp(progress);
   const streak = getStreak(progress.xpByDay, new Date());
 
-  const layout = useMemo(() => (mapWidth ? computePathLayout(pathItems, mapWidth) : null), [mapWidth]);
+  const layout = useMemo(
+    () => (mapWidth ? computePathLayout(pathItems, mapWidth) : null),
+    [pathItems, mapWidth],
+  );
   const activeNode = layout?.nodes.find((node) => statuses[node.item.id] === 'active');
   const activeY = activeNode?.y;
 

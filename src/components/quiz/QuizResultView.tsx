@@ -10,6 +10,7 @@ import { GameIcon } from '@/components/GameIcon';
 import { OctoMark } from '@/components/OctoMark';
 import { AppText, Column, GameButton } from '@/components/ui';
 import { findNextPathItem } from '@/domain/course';
+import { useCourse } from '@/store/courseStore';
 import { getStreak } from '@/domain/progress';
 import { goBackToPath } from '@/lib/navigation';
 import { useProgress } from '@/store/progressStore';
@@ -31,7 +32,7 @@ export function QuizResultView({ item, attempt, onRetry }: QuizResultViewProps) 
   const streak = getStreak(useProgress().xpByDay, new Date());
   const total = item.quiz.questions.length;
   const percent = Math.round((attempt.correct / total) * 100);
-  const nextItem = findNextPathItem(item.id);
+  const nextItem = findNextPathItem(useCourse().pathItems, item.id);
   // Short phones give the space to the score and rewards.
   const isShort = useWindowDimensions().height < SHORT_SCREEN_HEIGHT;
 

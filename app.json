@@ -39,7 +39,8 @@
           "backgroundColor": "#F6F4FF"
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-sqlite"
     ],
     "scheme": "octolearn",
     "extra": {
